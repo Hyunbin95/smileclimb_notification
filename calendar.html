@@ -274,7 +274,7 @@
 <body>
 
   <!-- 공지 모드 복귀 -->
-  <div class="notice-exit">
+  <div class="notice-exit" style="display:none;">
     <button onclick="exitNoticeMode()">⚙️ 설정으로 돌아가기</button>
   </div>
 
@@ -417,7 +417,7 @@
 
 <script>
 
-// ✅ 기본 주말/평일 정모 세팅
+// ✅ 기본 주말/평일 정모 세팅 **
 const DEFAULT_WEEKEND = {
   dates: [7, 14, 21, 28],     // 기본 주말 정모 날짜
   time: "오후 2:00",
@@ -430,13 +430,13 @@ const DEFAULT_WEEKDAY = {
   place: "어디 갈까?"
 };
 
-//기본 날짜 세팅
+//기본 날짜 세팅 **
 const DEFAULT_SPECIALS = [
   { day: 17, label: " 정모", place: "더클라임 강남점" },
   // { day: 24, label: "번개", place: "신림점" },
 ];
 
-
+// 기본세팅 *
 function seedDefaultSpecials() {
   console.log(DEFAULT_SPECIALS);
   if(DEFAULT_SPECIALS == null){
@@ -667,6 +667,8 @@ function seedDefaultSpecials() {
   window.onload = () => {
   //seedDefaultSpecials(); // ✅ 기본 특별일정 주입
   generate();            // ✅ 바로 달력 렌더
+  //설정모드 가리기 *
+  enterNoticeMode();
 };
 </script>
 </body>
