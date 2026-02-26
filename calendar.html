@@ -249,7 +249,7 @@
     }
     .badge.weekend { background: #7BC67E; color: #fff; }
     .badge.weekday { background: #F4A261; color: #fff; }
-    .badge.special { background: #7BC67E; color: #fff; }
+    .badge.special { background: #3a3d3b; color: #fff; }
 
     /* Info Cards */
     .info-section { padding: 0 20px 24px; display: flex; flex-direction: column; gap: 10px; }
@@ -410,7 +410,7 @@
     <div class="legend">
       <!--<div class="legend-item"><div class="dot" style="background:#7BC67E"></div> 주말 정모</div>-->
       <!--<div class="legend-item"><div class="dot" style="background:#F4A261"></div> 평일 정모</div>-->
-      <div class="legend-item"><div class="dot" style="background:#7BC67E"></div> 정모</div>
+      <div class="legend-item"><div class="dot" style="background:#0d1a0e"></div> 정모</div>
       <div class="legend-item"><div class="dot" style="background:#e25555"></div> 일요일</div>
       <div class="legend-item"><div class="dot" style="background:#4a90d9"></div> 토요일</div>
     </div>
@@ -440,18 +440,18 @@
 const DEFAULT_WEEKEND = {
   dates: [7, 14, 21, 28],     // 기본 주말 정모 날짜
   time: "오후 2:00",
-  place: "어디 갈래?"
+  place: "장소 미정"
 };
 
 const DEFAULT_WEEKDAY = {
   dates: [3, 11, 17, 25,31],    // 기본 평일 정모 날짜
   time: "저녁 7:00",
-  place: "어디 갈까?"
+  place: "장소 미정"
 };
 
 //기본 날짜 세팅 **
 const DEFAULT_SPECIALS = [
-  { day: 17, label: " 정모", place: "더클라임 강남점" },
+  { day: 11, label: "을손", place: "을지로 손상원" },
   // { day: 24, label: "번개", place: "신림점" },
 ];
 
@@ -684,7 +684,7 @@ function seedDefaultSpecials() {
 
   // 페이지 로드 시 기본 달력 그리기
   window.onload = () => {
-  //seedDefaultSpecials(); // ✅ 기본 특별일정 주입
+  seedDefaultSpecials(); // ✅ 기본 특별일정 주입
   generate();            // ✅ 바로 달력 렌더
   //설정모드 가리기 *
   enterNoticeMode();
