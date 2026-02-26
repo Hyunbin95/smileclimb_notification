@@ -173,25 +173,14 @@
       box-shadow: 0 8px 40px rgba(0,0,0,.12);
       overflow: hidden;
     }
-    /* ✅ 달력 가로 스크롤 */
-    .calendar-scroll {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 6px; /* 스크롤바 공간 */
-    }
 
-    .calendar-wide {
-      min-width: 450px; /* 7열이 안정적으로 유지되는 최소 폭(조절 가능) */
-    }
-
-    .calendar-wide .day-headers,
-    .calendar-wide .calendar-grid {
-      width: 100%;
-    }
+    /* ✅ 스크롤 제거 유지 */
+    .calendar-scroll { overflow-x: hidden; padding-bottom: 0; }
+    .calendar-wide { min-width: 0; }
 
     /* Header */
     .header {
-      position: relative;   /* 기준점 추가 */
+      position: relative;
       background: #1a1a1a;
       padding: 26px 30px 20px;
       display: flex;
@@ -219,18 +208,22 @@
     .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
 
     /* Calendar */
-    .calendar-section { padding: 18px 20px 20px; }
-    .day-headers { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; margin-bottom: 7px; }
-    .day-headers div { font-size: 12px; font-weight: 700; padding: 5px 0; color: #888; }
+    /* ✅ 여백 좀 줄이기 */
+    .calendar-section { padding: 14px 14px 14px; }
+
+    .day-headers { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; margin-bottom: 6px; }
+    .day-headers div { font-size: 12px; font-weight: 700; padding: 4px 0; color: #888; }
     .day-headers .sun { color: #e25555; }
     .day-headers .sat { color: #4a90d9; }
 
-    .calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 5px; }
+    /* ✅ gap 줄이기 */
+    .calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
 
+    /* ✅ 셀 높이/패딩 줄이기 */
     .cell {
       border-radius: 11px;
-      padding: 6px 4px 7px;
-      min-height: 68px;
+      padding: 5px 4px 6px;
+      min-height: 62px;
       display: flex; flex-direction: column; align-items: center;
       background: #fafafa;
       border: 1.5px solid #f0ece7;
@@ -242,10 +235,19 @@
     .cell.sun .date-num { color: #e25555; }
     .cell.sat .date-num { color: #4a90d9; }
 
+    /* ✅ 배지: 글자는 그대로, 범위 벗어나면 줄바꿈(밑으로 이어쓰기) */
     .badge {
-      font-size: 11px; font-weight: 700;
-      border-radius: 20px; padding: 2px 5px;
-      margin-top: 4px; white-space: nowrap; text-align: center;
+      font-size: 10px; font-weight: 700;
+      border-radius: 12px;
+      padding: 2px 6px;
+      margin-top: 3px;
+      text-align: center;
+      max-width: 100%;
+
+      white-space: normal;        /* ✅ 줄바꿈 허용 */
+      word-break: keep-all;       /* ✅ 한글 단어는 가능하면 유지 */
+      overflow-wrap: anywhere;    /* ✅ 너무 길면 어쩔 수 없이 끊기 */
+      line-height: 1.15;
     }
     .badge.weekend { background: #7BC67E; color: #fff; }
     .badge.weekday { background: #F4A261; color: #fff; }
@@ -276,11 +278,31 @@
       margin: 0 auto 14px;
       text-align: right;
     }
-    body.notice-mode .notice-exit { display: block; }
+    body.notice-mode .notice-exit { display: none; }
     .notice-exit button {
       background: #555; color: #fff; border: none; border-radius: 9px;
       padding: 8px 16px; font-size: 12px; font-weight: 700;
       font-family: 'Noto Sans KR', sans-serif; cursor: pointer;
+    }
+
+    @media (max-width: 520px) {
+      body { padding: 18px 10px 50px; }
+      .header { padding: 20px 18px 16px; gap: 12px; }
+      .header img { width: 64px; height: 64px; }
+      .header-text h1 { font-size: 24px; }
+      .legend { padding: 10px 16px; gap: 10px; }
+
+      .calendar-section { padding: 12px 10px 12px; }
+      .day-headers div { font-size: 11px; padding: 3px 0; }
+      .calendar-grid { gap: 3px; }
+
+      .cell { min-height: 56px; padding: 4px 2px 5px; border-radius: 10px; }
+      .date-num { font-size: 12px; margin-bottom: 2px; }
+
+      .badge { font-size: 8px; padding: 2px 4px; margin-top: 2px; }
+
+      .info-section { padding: 0 12px 18px; }
+      .footer { padding: 12px 14px; font-size: 11px; }
     }
 
     @media print { .settings-wrap, .top-actions, .notice-exit { display: none !important; } }
@@ -299,7 +321,7 @@
   </div>
 
   <!-- ── 설정 패널 ── -->
-  <div class="settings-wrap">
+  <div class="settings-wrap" style="display:none;">
     <button class="settings-toggle open" id="toggleBtn" onclick="toggleSettings()">
       <span>⚙️ 정모 일정 설정하기</span>
       <span class="arrow">▲</span>
@@ -327,7 +349,6 @@
       </div>
 
       <!-- 주말 정모 -->
-       
       <div class="section-divider"><span>🟢</span>주말 정모</div>
       <div class="form-row">
         <div class="form-group" style="min-width:200px">
@@ -345,9 +366,8 @@
           <input type="text" id="inp-weekend-place" placeholder="예: 더클라임 강남점"/>
         </div>
       </div>
-    
+
       <!-- 평일 정모 -->
-       
       <div class="section-divider"><span>🟠</span>평일 정모</div>
       <div class="form-row">
         <div class="form-group" style="min-width:200px">
@@ -408,8 +428,6 @@
     </div>
 
     <div class="legend">
-      <!--<div class="legend-item"><div class="dot" style="background:#7BC67E"></div> 주말 정모</div>-->
-      <!--<div class="legend-item"><div class="dot" style="background:#F4A261"></div> 평일 정모</div>-->
       <div class="legend-item"><div class="dot" style="background:#0d1a0e"></div> 정모</div>
       <div class="legend-item"><div class="dot" style="background:#e25555"></div> 일요일</div>
       <div class="legend-item"><div class="dot" style="background:#4a90d9"></div> 토요일</div>
@@ -435,49 +453,44 @@
   </div>
 
 <script>
+  // ✅ 기본 주말/평일 정모 세팅
+  const DEFAULT_WEEKEND = {
+    dates: [7, 14, 21, 28],
+    time: "오후 2:00",
+    place: "장소 미정"
+  };
 
-// ✅ 기본 주말/평일 정모 세팅 **
-const DEFAULT_WEEKEND = {
-  dates: [7, 14, 21, 28],     // 기본 주말 정모 날짜
-  time: "오후 2:00",
-  place: "장소 미정"
-};
+  const DEFAULT_WEEKDAY = {
+    dates: [3, 11, 17, 25, 31],
+    time: "저녁 7:00",
+    place: "장소 미정"
+  };
 
-const DEFAULT_WEEKDAY = {
-  dates: [3, 11, 17, 25,31],    // 기본 평일 정모 날짜
-  time: "저녁 7:00",
-  place: "장소 미정"
-};
+  // ✅ 기본 특별 일정
+  const DEFAULT_SPECIALS = [
+    { day: 11, label: "을지로 손상원", place: "을지로 손상원 7시" },
+    { day: 11, label: "신촌담장", place: "신촌 담장 7시" },
+    { day: 3, label: "신촌 피커스", place: "을지로 손상원 7시" },
+    // { day: 11, label: "2차", place: "어딘가" }, // ✅ 같은 날짜 여러개도 가능
+  ];
 
-//기본 날짜 세팅 **
-const DEFAULT_SPECIALS = [
-  { day: 11, label: "을손", place: "을지로 손상원" },
-  { day: 3, label: "신촌피커스", place: "신촌피커스" },
-  // { day: 24, label: "번개", place: "신림점" },
-];
+  // 기본세팅
+  function seedDefaultSpecials() {
+    if (DEFAULT_SPECIALS == null) return;
+    const list = document.getElementById('specialList');
+    list.innerHTML = '';
 
-// 기본세팅 *
-function seedDefaultSpecials() {
-  console.log(DEFAULT_SPECIALS);
-  if(DEFAULT_SPECIALS == null){
-    return;
+    DEFAULT_SPECIALS.forEach(({ day, label, place }) => {
+      addSpecial();
+      const rows = document.querySelectorAll('.special-row');
+      const row = rows[rows.length - 1];
+      const inputs = row.querySelectorAll('input');
+
+      inputs[0].value = day;
+      inputs[1].value = label;
+      inputs[2].value = place;
+    });
   }
-  // specialList 비우고 시작(원하면 유지해도 됨)
-  const list = document.getElementById('specialList');
-  list.innerHTML = '';
-
-  DEFAULT_SPECIALS.forEach(({ day, label, place }, idx) => {
-    // 첫 줄은 addSpecial()을 써도 되고, 그냥 직접 만들면 됨
-    addSpecial(); // 기존 함수 재사용
-    const rows = document.querySelectorAll('.special-row');
-    const row = rows[rows.length - 1];
-    const inputs = row.querySelectorAll('input');
-
-    inputs[0].value = day;      // 날짜
-    inputs[1].value = label;    // 내용
-    inputs[2].value = place;    // 장소
-  });
-}
 
   // ─── 설정 패널 토글 ───
   function toggleSettings() {
@@ -529,7 +542,6 @@ function seedDefaultSpecials() {
     const contact      = document.getElementById('inp-contact').value.trim();
     const hashtag      = document.getElementById('inp-hashtag').value.trim();
 
-        // 입력값 읽기
     const weekendDatesInput = parseDates(document.getElementById('inp-weekend-dates').value);
     const weekdayDatesInput = parseDates(document.getElementById('inp-weekday-dates').value);
 
@@ -539,7 +551,6 @@ function seedDefaultSpecials() {
     const weekdayTimeInput  = document.getElementById('inp-weekday-time').value.trim();
     const weekdayPlaceInput = document.getElementById('inp-weekday-place').value.trim();
 
-    // ✅ 비어있으면 기본값으로 대체
     const weekendDates = weekendDatesInput.length ? weekendDatesInput : (DEFAULT_WEEKEND?.dates || []);
     const weekdayDates = weekdayDatesInput.length ? weekdayDatesInput : (DEFAULT_WEEKDAY?.dates || []);
 
@@ -549,15 +560,16 @@ function seedDefaultSpecials() {
     const weekdayTime  = weekdayTimeInput  || DEFAULT_WEEKDAY?.time  || '';
     const weekdayPlace = weekdayPlaceInput || DEFAULT_WEEKDAY?.place || '';
 
-    // 특별 일정 수집
-    const specials = {};
+    /* ✅ 특별 일정 수집: 같은 날짜 여러개 저장 */
+    const specials = {}; // { [day]: [{label, place}, {label, place}, ...] }
     document.querySelectorAll('.special-row').forEach(row => {
       const inputs = row.querySelectorAll('input');
       const d = parseInt(inputs[0].value);
       const label = inputs[1].value.trim();
       const place = inputs[2].value.trim();
       if (!isNaN(d) && d >= 1 && label) {
-        specials[d] = { label, place };
+        if (!specials[d]) specials[d] = [];
+        specials[d].push({ label, place });
       }
     });
 
@@ -605,12 +617,17 @@ function seedDefaultSpecials() {
         b.textContent = '평일정모';
         cell.appendChild(b);
       }
-      if (specials[d]) {
-        const b = document.createElement('div');
-        b.className = 'badge special';
-        b.textContent = specials[d].label;
-        cell.appendChild(b);
+
+      /* ✅ 같은 날짜 특별일정 여러개면 배지도 여러개 */
+      if (specials[d] && specials[d].length > 0) {
+        specials[d].forEach(item => {
+          const b = document.createElement('div');
+          b.className = 'badge special';
+          b.textContent = item.label;   // ✅ 원래 글자 그대로
+          cell.appendChild(b);
+        });
       }
+
       grid.appendChild(cell);
     }
 
@@ -648,14 +665,20 @@ function seedDefaultSpecials() {
         </div>`;
     }
 
-    // 특별 일정 카드
-    const specialEntries = Object.entries(specials);
-    if (specialEntries.length > 0) {
-      const rows = specialEntries.map(([d, v]) => {
-        let line = `<strong>⭐ ${month}/${d} — ${v.label}</strong>`;
-        if (v.place) line += `<span>📍 ${v.place}</span>`;
-        return line;
+    // ✅ 특별 일정 카드: 같은 날짜 여러개 모두 출력
+    const specialDays = Object.keys(specials)
+      .map(k => parseInt(k))
+      .sort((a,b) => a-b);
+
+    if (specialDays.length > 0) {
+      const rows = specialDays.map(day => {
+        return specials[day].map(v => {
+          let line = `<strong>⭐ ${month}/${day} — ${v.label}</strong>`;
+          if (v.place) line += `<span>📍 ${v.place}</span>`;
+          return line;
+        }).join('');
       }).join('');
+
       info.innerHTML += `
         <div class="info-card purple">
           <div class="icon">⭐</div>
@@ -664,7 +687,7 @@ function seedDefaultSpecials() {
     }
 
     // 빈 안내
-    if (weekendDates.length === 0 && weekdayDates.length === 0 && specialEntries.length === 0) {
+    if (weekendDates.length === 0 && weekdayDates.length === 0 && specialDays.length === 0) {
       info.innerHTML = `
         <div class="info-card blue">
           <div class="icon">ℹ️</div>
@@ -685,11 +708,10 @@ function seedDefaultSpecials() {
 
   // 페이지 로드 시 기본 달력 그리기
   window.onload = () => {
-  seedDefaultSpecials(); // ✅ 기본 특별일정 주입
-  generate();            // ✅ 바로 달력 렌더
-  //설정모드 가리기 *
-  enterNoticeMode();
-};
+    seedDefaultSpecials();
+    generate();
+    enterNoticeMode();
+  };
 </script>
 </body>
 </html>
