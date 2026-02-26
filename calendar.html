@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smile Climbing – 월간 정모 스케줄</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f0ece6;
+      padding: 24px 16px 60px;
+      min-height: 100vh;
+    }
+
+    /* ════════════════════════════════
+       설정 패널
+    ════════════════════════════════ */
+    .settings-wrap {
+      max-width: 680px;
+      margin: 0 auto 20px;
+    }
+    .settings-toggle {
+      width: 100%;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 13px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      letter-spacing: 0.3px;
+    }
+    .settings-toggle .arrow { transition: transform .25s; font-size: 16px; }
+    .settings-toggle.open .arrow { transform: rotate(180deg); }
+
+    .settings-panel {
+      background: #fff;
+      border-radius: 0 0 16px 16px;
+      padding: 20px 22px 22px;
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.08);
+    }
+    .settings-panel.open { display: flex; }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; }
+    .form-group label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #555;
+      letter-spacing: 0.3px;
+    }
+    .form-group input, .form-group select {
+      border: 1.5px solid #ddd;
+      border-radius: 9px;
+      padding: 8px 11px;
+      font-size: 13px;
+      font-family: 'Noto Sans KR', sans-serif;
+      color: #222;
+      outline: none;
+      transition: border-color .2s;
+      background: #fafafa;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: #7BC67E; background: #fff; }
+
+    .section-divider {
+      font-size: 12px;
+      font-weight: 700;
+      color: #888;
+      border-bottom: 1.5px solid #f0ece6;
+      padding-bottom: 6px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .section-divider span { margin-right: 6px; }
+
+    /* 특별 일정 행 */
+    .special-list { display: flex; flex-direction: column; gap: 8px; }
+    .special-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .special-row input { flex: 1; }
+    .special-row input.date-input { max-width: 80px; }
+    .btn-remove {
+      background: #ffe0e0;
+      color: #e25555;
+      border: none;
+      border-radius: 8px;
+      width: 30px; height: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .btn-add {
+      background: #edf7ee;
+      color: #4caf50;
+      border: none;
+      border-radius: 9px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    .btn-generate {
+      background: linear-gradient(135deg, #7BC67E, #4caf50);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      box-shadow: 0 3px 12px rgba(123,198,126,.4);
+    }
+
+    /* 공지 모드 버튼 */
+    .top-actions {
+      max-width: 680px;
+      margin: 0 auto 12px;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .btn-notice-mode {
+      background: #F4A261;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+    }
+    .btn-notice-mode:hover { background: #e8904a; }
+
+    /* 공지 모드일 때 설정 숨김 */
+    body.notice-mode .settings-wrap,
+    body.notice-mode .top-actions { display: none; }
+
+    /* ════════════════════════════════
+       달력 카드
+    ════════════════════════════════ */
+    .card {
+      background: #fff;
+      border-radius: 28px;
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+      box-shadow: 0 8px 40px rgba(0,0,0,.12);
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      position: relative;   /* 기준점 추가 */
+      background: #1a1a1a;
+      padding: 26px 30px 20px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .header img {
+      width: 84px; height: 84px;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+    }
+    .header-text .month-label { font-size: 12px; font-weight: 600; color: #999; letter-spacing: 3px; }
+    .header-text h1 { font-size: 30px; font-weight: 900; color: #fff; line-height: 1.15; }
+    .header-text h1 span { color: #7BC67E; }
+    .header-text .subtitle { margin-top: 3px; font-size: 12px; color: #bbb; }
+
+    /* Legend */
+    .legend {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      padding: 12px 28px;
+      background: #f9f6f2;
+      border-bottom: 1px solid #eee;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: #444; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Calendar */
+    .calendar-section { padding: 18px 20px 20px; }
+    .day-headers { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; margin-bottom: 7px; }
+    .day-headers div { font-size: 12px; font-weight: 700; padding: 5px 0; color: #888; }
+    .day-headers .sun { color: #e25555; }
+    .day-headers .sat { color: #4a90d9; }
+
+    .calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 5px; }
+
+    .cell {
+      border-radius: 11px;
+      padding: 6px 4px 7px;
+      min-height: 68px;
+      display: flex; flex-direction: column; align-items: center;
+      background: #fafafa;
+      border: 1.5px solid #f0ece7;
+    }
+    .cell.empty { background: transparent; border-color: transparent; }
+    .cell.today { border-color: #F4A261; background: #fff8f2; }
+
+    .date-num { font-size: 13px; font-weight: 700; color: #222; margin-bottom: 3px; line-height: 1; }
+    .cell.sun .date-num { color: #e25555; }
+    .cell.sat .date-num { color: #4a90d9; }
+
+    .badge {
+      font-size: 11px; font-weight: 700;
+      border-radius: 20px; padding: 2px 5px;
+      margin-top: 4px; white-space: nowrap; text-align: center;
+    }
+    .badge.weekend { background: #7BC67E; color: #fff; }
+    .badge.weekday { background: #F4A261; color: #fff; }
+    .badge.special { background: #7BC67E; color: #fff; }
+
+    /* Info Cards */
+    .info-section { padding: 0 20px 24px; display: flex; flex-direction: column; gap: 10px; }
+    .info-card {
+      border-radius: 14px; padding: 13px 16px;
+      display: flex; align-items: flex-start; gap: 11px;
+    }
+    .info-card.green  { background: #edf7ee; border-left: 4px solid #7BC67E; }
+    .info-card.orange { background: #fff5ec; border-left: 4px solid #F4A261; }
+    .info-card.purple { background: #fdf0f8; border-left: 4px solid #7BC67E; }
+    .info-card.blue   { background: #eef4ff; border-left: 4px solid #6699ee; }
+    .info-card .icon { font-size: 20px; line-height: 1; }
+    .info-card .body strong { font-size: 12.5px; font-weight: 700; color: #222; display: block; margin-bottom: 2px; }
+    .info-card .body span   { font-size: 11.5px; color: #666; line-height: 1.6; display: block; }
+
+    /* Footer */
+    .footer { background: #1a1a1a; padding: 14px 28px; text-align: center; color: #777; font-size: 11.5px; }
+    .footer strong { color: #aaa; }
+
+    /* 공지 모드 복귀 버튼 (달력 위) */
+    .notice-exit {
+      display: none;
+      max-width: 680px;
+      margin: 0 auto 14px;
+      text-align: right;
+    }
+    body.notice-mode .notice-exit { display: block; }
+    .notice-exit button {
+      background: #555; color: #fff; border: none; border-radius: 9px;
+      padding: 8px 16px; font-size: 12px; font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif; cursor: pointer;
+    }
+
+    @media print { .settings-wrap, .top-actions, .notice-exit { display: none !important; } }
+  </style>
+</head>
+<body>
+
+  <!-- 공지 모드 복귀 -->
+  <div class="notice-exit">
+    <button onclick="exitNoticeMode()">⚙️ 설정으로 돌아가기</button>
+  </div>
+
+  <!-- 상단 버튼 -->
+  <div class="top-actions">
+    <button class="btn-notice-mode" onclick="enterNoticeMode()">📢 공지 캡처 모드</button>
+  </div>
+
+  <!-- ── 설정 패널 ── -->
+  <div class="settings-wrap">
+    <button class="settings-toggle open" id="toggleBtn" onclick="toggleSettings()">
+      <span>⚙️ 정모 일정 설정하기</span>
+      <span class="arrow">▲</span>
+    </button>
+    <div class="settings-panel open" id="settingsPanel">
+
+      <!-- 연월 -->
+      <div class="section-divider"><span>📅</span>달력 연월</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>연도</label>
+          <input type="number" id="inp-year" value="2026" min="2020" max="2040"/>
+        </div>
+        <div class="form-group">
+          <label>월</label>
+          <select id="inp-month">
+            <option value="1">1월</option><option value="2">2월</option>
+            <option value="3" selected>3월</option><option value="4">4월</option>
+            <option value="5">5월</option><option value="6">6월</option>
+            <option value="7">7월</option><option value="8">8월</option>
+            <option value="9">9월</option><option value="10">10월</option>
+            <option value="11">11월</option><option value="12">12월</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 주말 정모 -->
+       
+      <div class="section-divider"><span>🟢</span>주말 정모</div>
+      <div class="form-row">
+        <div class="form-group" style="min-width:200px">
+          <label>날짜 (쉼표로 구분 예: 1, 8, 15, 22)</label>
+          <input type="text" id="inp-weekend-dates" placeholder="예: 1, 8, 15, 22"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>집합 시간</label>
+          <input type="text" id="inp-weekend-time" placeholder="예: 오전 10:00"/>
+        </div>
+        <div class="form-group">
+          <label>장소</label>
+          <input type="text" id="inp-weekend-place" placeholder="예: 더클라임 강남점"/>
+        </div>
+      </div>
+    
+      <!-- 평일 정모 -->
+       
+      <div class="section-divider"><span>🟠</span>평일 정모</div>
+      <div class="form-row">
+        <div class="form-group" style="min-width:200px">
+          <label>날짜 (쉼표로 구분 예: 4, 11, 18, 25)</label>
+          <input type="text" id="inp-weekday-dates" placeholder="예: 4, 11, 18, 25"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>집합 시간</label>
+          <input type="text" id="inp-weekday-time" placeholder="예: 저녁 7:30"/>
+        </div>
+        <div class="form-group">
+          <label>장소</label>
+          <input type="text" id="inp-weekday-place" placeholder="예: 더클라임 신림점"/>
+        </div>
+      </div>
+
+      <!-- 특별 일정 -->
+      <div class="section-divider"><span>⭐</span>정모생성</div>
+      <div class="special-list" id="specialList">
+        <div class="special-row">
+          <input class="date-input" type="number" placeholder="날짜" min="1" max="31" style="border:1.5px solid #ddd;border-radius:9px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;background:#fafafa;"/>
+          <input type="text" placeholder="내용 (예: 번개, 대회 참가)" style="border:1.5px solid #ddd;border-radius:9px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;flex:1;background:#fafafa;"/>
+          <input type="text" placeholder="장소 (선택)" style="border:1.5px solid #ddd;border-radius:9px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;flex:1;background:#fafafa;"/>
+          <button class="btn-remove" onclick="removeSpecial(this)">×</button>
+        </div>
+      </div>
+      <button class="btn-add" onclick="addSpecial()">+ 특별 일정 추가</button>
+
+      <!-- 공지 하단 문구 -->
+      <div class="section-divider"><span>💬</span>공지 하단 문구</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>연락처 / 채널</label>
+          <input type="text" id="inp-contact" placeholder="예: 카카오톡 오픈채팅" value="카카오톡 오픈채팅"/>
+        </div>
+        <div class="form-group">
+          <label>해시태그</label>
+          <input type="text" id="inp-hashtag" placeholder="예: #싱글벙클" value="#싱글벙클"/>
+        </div>
+      </div>
+
+      <button class="btn-generate" onclick="generate()">🗓️ 달력 생성하기</button>
+    </div>
+  </div>
+
+  <!-- ── 달력 카드 ── -->
+  <div class="card" id="calendarCard">
+
+    <div class="header">
+      <img src="https://www.genspark.ai/api/files/s/mjL4aDIJ" alt="Smile Climbing Logo" onerror="this.style.display='none'"/>
+      <div class="header-text">
+        <div class="month-label" id="hdr-label">2026 Schedule</div>
+        <h1 id="hdr-title">3월 <span>정모 일정</span></h1>
+        <div class="subtitle">Smile Climbing Crew 🧗</div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <!--<div class="legend-item"><div class="dot" style="background:#7BC67E"></div> 주말 정모</div>-->
+      <!--<div class="legend-item"><div class="dot" style="background:#F4A261"></div> 평일 정모</div>-->
+      <div class="legend-item"><div class="dot" style="background:#7BC67E"></div> 정모</div>
+      <div class="legend-item"><div class="dot" style="background:#e25555"></div> 일요일</div>
+      <div class="legend-item"><div class="dot" style="background:#4a90d9"></div> 토요일</div>
+    </div>
+
+    <div class="calendar-section">
+      <div class="day-headers">
+        <div class="sun">일</div><div>월</div><div>화</div><div>수</div>
+        <div>목</div><div>금</div><div class="sat">토</div>
+      </div>
+      <div class="calendar-grid" id="calGrid"></div>
+    </div>
+
+    <div class="info-section" id="infoSection"></div>
+
+    <div class="footer" id="footerSection">
+      <strong>SMILE CLIMBING CREW</strong> &nbsp;|&nbsp; 문의: 카카오톡 오픈채팅 &nbsp;|&nbsp; #스마일클라이밍
+    </div>
+  </div>
+
+<script>
+
+// ✅ 기본 주말/평일 정모 세팅
+const DEFAULT_WEEKEND = {
+  dates: [7, 14, 21, 28],     // 기본 주말 정모 날짜
+  time: "오후 2:00",
+  place: "어디 갈래?"
+};
+
+const DEFAULT_WEEKDAY = {
+  dates: [3, 11, 17, 25,31],    // 기본 평일 정모 날짜
+  time: "저녁 7:00",
+  place: "어디 갈까?"
+};
+
+//기본 날짜 세팅
+const DEFAULT_SPECIALS = [
+  { day: 17, label: " 정모", place: "더클라임 강남점" },
+  // { day: 24, label: "번개", place: "신림점" },
+];
+
+
+function seedDefaultSpecials() {
+  console.log(DEFAULT_SPECIALS);
+  if(DEFAULT_SPECIALS == null){
+    return;
+  }
+  // specialList 비우고 시작(원하면 유지해도 됨)
+  const list = document.getElementById('specialList');
+  list.innerHTML = '';
+
+  DEFAULT_SPECIALS.forEach(({ day, label, place }, idx) => {
+    // 첫 줄은 addSpecial()을 써도 되고, 그냥 직접 만들면 됨
+    addSpecial(); // 기존 함수 재사용
+    const rows = document.querySelectorAll('.special-row');
+    const row = rows[rows.length - 1];
+    const inputs = row.querySelectorAll('input');
+
+    inputs[0].value = day;      // 날짜
+    inputs[1].value = label;    // 내용
+    inputs[2].value = place;    // 장소
+  });
+}
+
+  // ─── 설정 패널 토글 ───
+  function toggleSettings() {
+    const panel = document.getElementById('settingsPanel');
+    const btn   = document.getElementById('toggleBtn');
+    panel.classList.toggle('open');
+    btn.classList.toggle('open');
+  }
+
+  // ─── 특별 일정 행 추가/제거 ───
+  function addSpecial() {
+    const list = document.getElementById('specialList');
+    const row = document.createElement('div');
+    row.className = 'special-row';
+    row.innerHTML = `
+      <input class="date-input" type="number" placeholder="날짜" min="1" max="31"
+        style="border:1.5px solid #ddd;border-radius:9px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;background:#fafafa;max-width:80px;"/>
+      <input type="text" placeholder="내용 (예: 번개, 대회 참가)"
+        style="border:1.5px solid #ddd;border-radius:9px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;flex:1;background:#fafafa;"/>
+      <input type="text" placeholder="장소 (선택)"
+        style="border:1.5px solid #ddd;border-radius:9px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;flex:1;background:#fafafa;"/>
+      <button class="btn-remove" onclick="removeSpecial(this)">×</button>`;
+    list.appendChild(row);
+  }
+  function removeSpecial(btn) {
+    const rows = document.querySelectorAll('.special-row');
+    if (rows.length > 1) btn.parentElement.remove();
+    else { btn.parentElement.querySelectorAll('input').forEach(i => i.value = ''); }
+  }
+
+  // ─── 공지 모드 ───
+  function enterNoticeMode() {
+    document.body.classList.add('notice-mode');
+    window.scrollTo({ top: document.getElementById('calendarCard').offsetTop - 20, behavior: 'smooth' });
+  }
+  function exitNoticeMode() { document.body.classList.remove('notice-mode'); }
+
+  // ─── 쉼표 구분 날짜 파싱 ───
+  function parseDates(str) {
+    if (!str || !str.trim()) return [];
+    return str.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 31);
+  }
+
+  // ─── 달력 생성 ───
+  function generate() {
+    const year  = parseInt(document.getElementById('inp-year').value);
+    const month = parseInt(document.getElementById('inp-month').value);
+
+    const contact      = document.getElementById('inp-contact').value.trim();
+    const hashtag      = document.getElementById('inp-hashtag').value.trim();
+
+        // 입력값 읽기
+    const weekendDatesInput = parseDates(document.getElementById('inp-weekend-dates').value);
+    const weekdayDatesInput = parseDates(document.getElementById('inp-weekday-dates').value);
+
+    const weekendTimeInput  = document.getElementById('inp-weekend-time').value.trim();
+    const weekendPlaceInput = document.getElementById('inp-weekend-place').value.trim();
+
+    const weekdayTimeInput  = document.getElementById('inp-weekday-time').value.trim();
+    const weekdayPlaceInput = document.getElementById('inp-weekday-place').value.trim();
+
+    // ✅ 비어있으면 기본값으로 대체
+    const weekendDates = weekendDatesInput.length ? weekendDatesInput : (DEFAULT_WEEKEND?.dates || []);
+    const weekdayDates = weekdayDatesInput.length ? weekdayDatesInput : (DEFAULT_WEEKDAY?.dates || []);
+
+    const weekendTime  = weekendTimeInput  || DEFAULT_WEEKEND?.time  || '';
+    const weekendPlace = weekendPlaceInput || DEFAULT_WEEKEND?.place || '';
+
+    const weekdayTime  = weekdayTimeInput  || DEFAULT_WEEKDAY?.time  || '';
+    const weekdayPlace = weekdayPlaceInput || DEFAULT_WEEKDAY?.place || '';
+
+    // 특별 일정 수집
+    const specials = {};
+    document.querySelectorAll('.special-row').forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      const d = parseInt(inputs[0].value);
+      const label = inputs[1].value.trim();
+      const place = inputs[2].value.trim();
+      if (!isNaN(d) && d >= 1 && label) {
+        specials[d] = { label, place };
+      }
+    });
+
+    // 헤더 업데이트
+    document.getElementById('hdr-label').textContent = `${year} Schedule`;
+    document.getElementById('hdr-title').innerHTML = `${month}월 <span>정모 일정</span>`;
+
+    // 달력 그리드
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    const today = new Date();
+    const firstDay = new Date(year, month - 1, 1).getDay();
+    const lastDate = new Date(year, month, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      const e = document.createElement('div');
+      e.className = 'cell empty';
+      grid.appendChild(e);
+    }
+
+    for (let d = 1; d <= lastDate; d++) {
+      const dow = (firstDay + d - 1) % 7;
+      const cell = document.createElement('div');
+      let cls = 'cell';
+      if (dow === 0) cls += ' sun';
+      if (dow === 6) cls += ' sat';
+      const isToday = (today.getFullYear() === year && today.getMonth() === month - 1 && today.getDate() === d);
+      if (isToday) cls += ' today';
+      cell.className = cls;
+
+      const num = document.createElement('div');
+      num.className = 'date-num';
+      num.textContent = d;
+      cell.appendChild(num);
+
+      if (weekendDates.includes(d)) {
+        const b = document.createElement('div');
+        b.className = 'badge weekend';
+        b.textContent = '주말정모';
+        cell.appendChild(b);
+      }
+      if (weekdayDates.includes(d)) {
+        const b = document.createElement('div');
+        b.className = 'badge weekday';
+        b.textContent = '평일정모';
+        cell.appendChild(b);
+      }
+      if (specials[d]) {
+        const b = document.createElement('div');
+        b.className = 'badge special';
+        b.textContent = specials[d].label;
+        cell.appendChild(b);
+      }
+      grid.appendChild(cell);
+    }
+
+    // 정보 카드
+    const info = document.getElementById('infoSection');
+    info.innerHTML = '';
+
+    // 주말 정모 카드
+    if (weekendDates.length > 0) {
+      const dateStr = weekendDates.map(d => `${month}/${d}`).join(', ');
+      const timeStr = weekendTime || '추후 공지';
+      const placeStr = weekendPlace || '추후 공지 (카톡방 확인)';
+      info.innerHTML += `
+        <div class="info-card green">
+          <div class="icon">🧗</div>
+          <div class="body">
+            <strong>주말 정모 — ${dateStr}</strong>
+            <span>⏰ ${timeStr} 집합 &nbsp;|&nbsp; 📍 ${placeStr}</span>
+          </div>
+        </div>`;
+    }
+
+    // 평일 정모 카드
+    if (weekdayDates.length > 0) {
+      const dateStr = weekdayDates.map(d => `${month}/${d}`).join(', ');
+      const timeStr = weekdayTime || '추후 공지';
+      const placeStr = weekdayPlace || '추후 공지 (카톡방 확인)';
+      info.innerHTML += `
+        <div class="info-card orange">
+          <div class="icon">🏋️</div>
+          <div class="body">
+            <strong>평일 정모 — ${dateStr}</strong>
+            <span>⏰ ${timeStr} 집합 &nbsp;|&nbsp; 📍 ${placeStr}</span>
+          </div>
+        </div>`;
+    }
+
+    // 특별 일정 카드
+    const specialEntries = Object.entries(specials);
+    if (specialEntries.length > 0) {
+      const rows = specialEntries.map(([d, v]) => {
+        let line = `<strong>⭐ ${month}/${d} — ${v.label}</strong>`;
+        if (v.place) line += `<span>📍 ${v.place}</span>`;
+        return line;
+      }).join('');
+      info.innerHTML += `
+        <div class="info-card purple">
+          <div class="icon">⭐</div>
+          <div class="body">${rows}</div>
+        </div>`;
+    }
+
+    // 빈 안내
+    if (weekendDates.length === 0 && weekdayDates.length === 0 && specialEntries.length === 0) {
+      info.innerHTML = `
+        <div class="info-card blue">
+          <div class="icon">ℹ️</div>
+          <div class="body">
+            <strong>일정 안내</strong>
+            <span>상단 설정 패널에서 날짜와 장소를 입력 후 [달력 생성하기] 를 눌러주세요.</span>
+          </div>
+        </div>`;
+    }
+
+    // 푸터
+    document.getElementById('footerSection').innerHTML =
+      `<strong>SMILE CLIMBING CREW</strong> &nbsp;|&nbsp; 문의: ${contact || '카카오톡 오픈채팅'} &nbsp;|&nbsp; ${hashtag || '#싱글벙클'}`;
+
+    // 달력 카드로 스크롤
+    document.getElementById('calendarCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // 페이지 로드 시 기본 달력 그리기
+  window.onload = () => {
+  //seedDefaultSpecials(); // ✅ 기본 특별일정 주입
+  generate();            // ✅ 바로 달력 렌더
+};
+</script>
+</body>
+</html>
