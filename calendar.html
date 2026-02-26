@@ -173,6 +173,21 @@
       box-shadow: 0 8px 40px rgba(0,0,0,.12);
       overflow: hidden;
     }
+    /* ✅ 달력 가로 스크롤 */
+    .calendar-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 6px; /* 스크롤바 공간 */
+    }
+
+    .calendar-wide {
+      min-width: 450px; /* 7열이 안정적으로 유지되는 최소 폭(조절 가능) */
+    }
+
+    .calendar-wide .day-headers,
+    .calendar-wide .calendar-grid {
+      width: 100%;
+    }
 
     /* Header */
     .header {
@@ -401,11 +416,15 @@
     </div>
 
     <div class="calendar-section">
-      <div class="day-headers">
-        <div class="sun">일</div><div>월</div><div>화</div><div>수</div>
-        <div>목</div><div>금</div><div class="sat">토</div>
+      <div class="calendar-scroll">
+        <div class="calendar-wide">
+          <div class="day-headers">
+            <div class="sun">일</div><div>월</div><div>화</div><div>수</div>
+            <div>목</div><div>금</div><div class="sat">토</div>
+          </div>
+          <div class="calendar-grid" id="calGrid"></div>
+        </div>
       </div>
-      <div class="calendar-grid" id="calGrid"></div>
     </div>
 
     <div class="info-section" id="infoSection"></div>
@@ -419,7 +438,7 @@
 
 // ✅ 기본 주말/평일 정모 세팅 **
 const DEFAULT_WEEKEND = {
-  dates: [7, 14,15, 21, 28],     // 기본 주말 정모 날짜
+  dates: [7, 14, 21, 28],     // 기본 주말 정모 날짜
   time: "오후 2:00",
   place: "어디 갈래?"
 };
