@@ -249,6 +249,25 @@
       overflow-wrap: anywhere;    /* ✅ 너무 길면 어쩔 수 없이 끊기 */
       line-height: 1.15;
     }
+
+    /* 🔥 주말/평일은 바 형태로 */
+    .badge.weekend{
+      width: 90%;          /* 넓게 */
+      height: 7px;         /* 얇은 바 */
+      padding: 0;          /* 텍스트 공간 제거 */
+      border-radius: 6px;
+      font-size: 0;        /* 🔥 텍스트 안 보이게 */
+      margin-top: 4px;
+    }
+    .badge.weekday {
+      width: 90%;          /* 넓게 */
+      height: 7px;         /* 얇은 바 */
+      padding: 0;          /* 텍스트 공간 제거 */
+      border-radius: 6px;
+      font-size: 0;        /* 🔥 텍스트 안 보이게 */
+      margin-top: 4px;
+    }
+
     .badge.weekend { background: #7BC67E; color: #fff; }
     .badge.weekday { background: #F4A261; color: #fff; }
     .badge.special { background: #3a3d3b; color: #fff; }
@@ -278,7 +297,7 @@
       margin: 0 auto 14px;
       text-align: right;
     }
-    body.notice-mode .notice-exit { display: none; }
+    body.notice-mode .notice-exit { display: block; }
     .notice-exit button {
       background: #555; color: #fff; border: none; border-radius: 9px;
       padding: 8px 16px; font-size: 12px; font-weight: 700;
@@ -429,8 +448,8 @@
 
     <div class="legend">
       <div class="legend-item"><div class="dot" style="background:#0d1a0e"></div> 정모</div>
-      <div class="legend-item"><div class="dot" style="background:#e25555"></div> 일요일</div>
-      <div class="legend-item"><div class="dot" style="background:#4a90d9"></div> 토요일</div>
+      <div class="legend-item"><div class="dot" style="background:#F4A261"></div> 평일정모</div>
+      <div class="legend-item"><div class="dot" style="background:#7BC67E"></div> 주말정모</div>
     </div>
 
     <div class="calendar-section">
@@ -607,13 +626,13 @@
       if (weekendDates.includes(d)) {
         const b = document.createElement('div');
         b.className = 'badge weekend';
-        b.textContent = '주말정모';
+        b.textContent = '';
         cell.appendChild(b);
       }
       if (weekdayDates.includes(d)) {
         const b = document.createElement('div');
         b.className = 'badge weekday';
-        b.textContent = '평일정모';
+        b.textContent = '';
         cell.appendChild(b);
       }
 
