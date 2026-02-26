@@ -487,8 +487,8 @@
 
   // ✅ 기본 특별 일정
   const DEFAULT_SPECIALS = [
-    { day: 11, label: "을지로 손상원", place: "을지로 손상원 7시" },
-    { day: 3, label: "신촌 피커스", place: "신촌 피커스 7시" },
+    { day: 11, label: "을지로 손상원", place: "현빈" },
+    { day: 3, label: "신촌 피커스", place: "미지,은지" },
     // { day: 11, label: "2차", place: "어딘가" }, // ✅ 같은 날짜 여러개도 가능
   ];
 
@@ -692,7 +692,7 @@
       const rows = specialDays.map(day => {
         return specials[day].map(v => {
           let line = `<strong>⭐ ${month}/${day} — ${v.label}</strong>`;
-          if (v.place) line += `<span>📍 ${v.place}</span>`;
+          if (v.place) line += `<span>🧗 ${v.place}</span>`;
           return line;
         }).join('');
       }).join('');
