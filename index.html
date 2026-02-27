@@ -772,6 +772,17 @@
       enterNoticeMode();
     }
   };
+  
+</script>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.init();
+
+    // 초대 링크로 들어오면 자동으로 가입/로그인 창 열기
+    const hasInvite = new URLSearchParams(window.location.search).has("invite_token");
+    if (hasInvite) window.netlifyIdentity.open("signup");
+  }
 </script>
 
 </body>
