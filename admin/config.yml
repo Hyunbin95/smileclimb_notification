@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: YOUR_GITHUB_ID/YOUR_REPO_NAME
+  repo: Hyunbin95/smileclimb_notification
   branch: main
 
 media_folder: "assets/uploads"
