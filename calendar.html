@@ -470,50 +470,7 @@
       <strong>SMILE CLIMBING CREW</strong> &nbsp;|&nbsp; 문의: 카카오톡 오픈채팅 &nbsp;|&nbsp; #스마일클라이밍
     </div>
   </div>
-
 <script>
-  // ✅ 기본 주말/평일 정모 세팅
-  const DEFAULT_WEEKEND = {
-    dates: [7, 14, 21, 28],
-    time: "오후 2:00",
-    place: "장소"
-  };
-
-  const DEFAULT_WEEKDAY = {
-    dates: [3, 11, 17, 25, 31],
-    time: "저녁 7:00",
-    place: "장소"
-  };
-
-  // ✅ 기본 특별 일정
-  const DEFAULT_SPECIALS = [
-    { day: 11, label: "을지로 손상원", place: "현빈" },
-    { day: 3, label: "신촌 피커스", place: "미지,은지" },
-    { day: 8, label: "문래 더클", place: "미지" },
-    { day: 17, label: "영등포 서울숲", place: "지혜" },
-    { day: 14, label: "추천받아요", place: "현빈" },
-    { day: 3, label: "성수 더클", place: "가은" },
-    // { day: 11, label: "2차", place: "어딘가" }, // ✅ 같은 날짜 여러개도 가능
-  ];
-
-  // 기본세팅
-  function seedDefaultSpecials() {
-    if (DEFAULT_SPECIALS == null) return;
-    const list = document.getElementById('specialList');
-    list.innerHTML = '';
-
-    DEFAULT_SPECIALS.forEach(({ day, label, place }) => {
-      addSpecial();
-      const rows = document.querySelectorAll('.special-row');
-      const row = rows[rows.length - 1];
-      const inputs = row.querySelectorAll('input');
-
-      inputs[0].value = day;
-      inputs[1].value = label;
-      inputs[2].value = place;
-    });
-  }
-
   // ─── 설정 패널 토글 ───
   function toggleSettings() {
     const panel = document.getElementById('settingsPanel');
@@ -522,7 +479,7 @@
     btn.classList.toggle('open');
   }
 
-  // ─── 특별 일정 행 추가/제거 ───
+  // ─── 특별 일정 행 추가/제거 (UI는 유지하되, "로컬 미리보기용"으로만 둠) ───
   function addSpecial() {
     const list = document.getElementById('specialList');
     const row = document.createElement('div');
@@ -537,6 +494,7 @@
       <button class="btn-remove" onclick="removeSpecial(this)">×</button>`;
     list.appendChild(row);
   }
+
   function removeSpecial(btn) {
     const rows = document.querySelectorAll('.special-row');
     if (rows.length > 1) btn.parentElement.remove();
@@ -556,40 +514,79 @@
     return str.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 31);
   }
 
-  // ─── 달력 생성 ───
-  function generate() {
-    const year  = parseInt(document.getElementById('inp-year').value);
-    const month = parseInt(document.getElementById('inp-month').value);
+  // ─── config.json 로드 ───
+  async function loadConfig() {
+    // 캐시 방지: GitHub Pages/브라우저 캐시 때문에 "왜 안 바뀌지?" 방지용
+    const url = `./config.json?v=${Date.now()}`;
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`config.json load failed: ${res.status}`);
+    return await res.json();
+  }
 
-    const contact      = document.getElementById('inp-contact').value.trim();
-    const hashtag      = document.getElementById('inp-hashtag').value.trim();
+  // ─── UI 폼에 config 값 세팅 (옵션: 설정패널 켜서 쓸 때 편하게) ───
+  function applyConfigToForm(cfg) {
+    // 설정 패널이 display:none 이어도 값 세팅은 됨
+    document.getElementById('inp-year').value = cfg.year ?? new Date().getFullYear();
+    document.getElementById('inp-month').value = cfg.month ?? (new Date().getMonth() + 1);
 
-    const weekendDatesInput = parseDates(document.getElementById('inp-weekend-dates').value);
-    const weekdayDatesInput = parseDates(document.getElementById('inp-weekday-dates').value);
+    const weekend = cfg.weekend ?? {};
+    const weekday = cfg.weekday ?? {};
 
-    const weekendTimeInput  = document.getElementById('inp-weekend-time').value.trim();
-    const weekendPlaceInput = document.getElementById('inp-weekend-place').value.trim();
+    document.getElementById('inp-weekend-dates').value = Array.isArray(weekend.dates) ? weekend.dates.join(', ') : '';
+    document.getElementById('inp-weekend-time').value  = weekend.time ?? '';
+    document.getElementById('inp-weekend-place').value = weekend.place ?? '';
 
-    const weekdayTimeInput  = document.getElementById('inp-weekday-time').value.trim();
-    const weekdayPlaceInput = document.getElementById('inp-weekday-place').value.trim();
+    document.getElementById('inp-weekday-dates').value = Array.isArray(weekday.dates) ? weekday.dates.join(', ') : '';
+    document.getElementById('inp-weekday-time').value  = weekday.time ?? '';
+    document.getElementById('inp-weekday-place').value = weekday.place ?? '';
 
-    const weekendDates = weekendDatesInput.length ? weekendDatesInput : (DEFAULT_WEEKEND?.dates || []);
-    const weekdayDates = weekdayDatesInput.length ? weekdayDatesInput : (DEFAULT_WEEKDAY?.dates || []);
+    document.getElementById('inp-contact').value = cfg.contact ?? '카카오톡 오픈채팅';
+    document.getElementById('inp-hashtag').value = cfg.hashtag ?? '#싱글벙클';
 
-    const weekendTime  = weekendTimeInput  || DEFAULT_WEEKEND?.time  || '';
-    const weekendPlace = weekendPlaceInput || DEFAULT_WEEKEND?.place || '';
-
-    const weekdayTime  = weekdayTimeInput  || DEFAULT_WEEKDAY?.time  || '';
-    const weekdayPlace = weekdayPlaceInput || DEFAULT_WEEKDAY?.place || '';
-
-    /* ✅ 특별 일정 수집: 같은 날짜 여러개 저장 */
-    const specials = {}; // { [day]: [{label, place}, {label, place}, ...] }
-    document.querySelectorAll('.special-row').forEach(row => {
+    // specials UI 채우기
+    const list = document.getElementById('specialList');
+    list.innerHTML = '';
+    const specials = Array.isArray(cfg.specials) ? cfg.specials : [];
+    if (specials.length === 0) addSpecial();
+    specials.forEach(s => {
+      addSpecial();
+      const rows = document.querySelectorAll('.special-row');
+      const row = rows[rows.length - 1];
       const inputs = row.querySelectorAll('input');
-      const d = parseInt(inputs[0].value);
-      const label = inputs[1].value.trim();
-      const place = inputs[2].value.trim();
-      if (!isNaN(d) && d >= 1 && label) {
+      inputs[0].value = s.day ?? '';
+      inputs[1].value = s.label ?? '';
+      inputs[2].value = s.place ?? '';
+    });
+  }
+
+  // ─── config 기반으로 달력 생성 ───
+  function generateFromConfig(cfg) {
+    const year  = parseInt(cfg.year);
+    const month = parseInt(cfg.month);
+
+    const contact = (cfg.contact ?? '').toString().trim();
+    const hashtag = (cfg.hashtag ?? '').toString().trim();
+
+    const weekend = cfg.weekend ?? {};
+    const weekday = cfg.weekday ?? {};
+
+    const weekendDates = Array.isArray(weekend.dates) ? weekend.dates : [];
+    const weekdayDates = Array.isArray(weekday.dates) ? weekday.dates : [];
+
+    const weekendTime  = (weekend.time ?? '').toString().trim();
+    const weekendPlace = (weekend.place ?? '').toString().trim();
+
+    const weekdayTime  = (weekday.time ?? '').toString().trim();
+    const weekdayPlace = (weekday.place ?? '').toString().trim();
+
+    // ✅ 특별 일정 수집: 같은 날짜 여러개 저장
+    const specials = {}; // { [day]: [{label, place}, ...] }
+    const specialList = Array.isArray(cfg.specials) ? cfg.specials : [];
+    specialList.forEach(item => {
+      const d = parseInt(item.day);
+      const label = (item.label ?? '').toString().trim();
+      const place = (item.place ?? '').toString().trim();
+      if (!isNaN(d) && d >= 1 && d <= 31 && label) {
         if (!specials[d]) specials[d] = [];
         specials[d].push({ label, place });
       }
@@ -627,6 +624,7 @@
       num.textContent = d;
       cell.appendChild(num);
 
+      // 주말/평일 바
       if (weekendDates.includes(d)) {
         const b = document.createElement('div');
         b.className = 'badge weekend';
@@ -640,12 +638,12 @@
         cell.appendChild(b);
       }
 
-      /* ✅ 같은 날짜 특별일정 여러개면 배지도 여러개 */
+      // ✅ 같은 날짜 특별일정 여러개면 배지도 여러개
       if (specials[d] && specials[d].length > 0) {
         specials[d].forEach(item => {
           const b = document.createElement('div');
           b.className = 'badge special';
-          b.textContent = item.label;   // ✅ 원래 글자 그대로
+          b.textContent = item.label;
           cell.appendChild(b);
         });
       }
@@ -657,7 +655,6 @@
     const info = document.getElementById('infoSection');
     info.innerHTML = '';
 
-    // 주말 정모 카드
     if (weekendDates.length > 0) {
       const dateStr = weekendDates.map(d => `${month}/${d}`).join(', ');
       const timeStr = weekendTime || '추후 공지';
@@ -672,7 +669,6 @@
         </div>`;
     }
 
-    // 평일 정모 카드
     if (weekdayDates.length > 0) {
       const dateStr = weekdayDates.map(d => `${month}/${d}`).join(', ');
       const timeStr = weekdayTime || '추후 공지';
@@ -687,11 +683,7 @@
         </div>`;
     }
 
-    // ✅ 특별 일정 카드: 같은 날짜 여러개 모두 출력
-    const specialDays = Object.keys(specials)
-      .map(k => parseInt(k))
-      .sort((a,b) => a-b);
-
+    const specialDays = Object.keys(specials).map(k => parseInt(k)).sort((a,b) => a-b);
     if (specialDays.length > 0) {
       const rows = specialDays.map(day => {
         return specials[day].map(v => {
@@ -708,14 +700,13 @@
         </div>`;
     }
 
-    // 빈 안내
     if (weekendDates.length === 0 && weekdayDates.length === 0 && specialDays.length === 0) {
       info.innerHTML = `
         <div class="info-card blue">
           <div class="icon">ℹ️</div>
           <div class="body">
             <strong>일정 안내</strong>
-            <span>상단 설정 패널에서 날짜와 장소를 입력 후 [달력 생성하기] 를 눌러주세요.</span>
+            <span>config.json에 일정을 입력 후 새로고침 해주세요.</span>
           </div>
         </div>`;
     }
@@ -728,12 +719,60 @@
     document.getElementById('calendarCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  // 페이지 로드 시 기본 달력 그리기
-  window.onload = () => {
-    seedDefaultSpecials();
-    generate();
-    enterNoticeMode();
+  // (옵션) 설정패널에서 "달력 생성하기" 버튼을 눌렀을 때도 동작은 하게 유지
+  //  - 단, 이건 "미리보기" 수준이고, 실제 공유/저장은 config.json을 수정해서 커밋하는 방식 추천
+  function generate() {
+    const cfg = {
+      year: parseInt(document.getElementById('inp-year').value),
+      month: parseInt(document.getElementById('inp-month').value),
+      contact: document.getElementById('inp-contact').value.trim(),
+      hashtag: document.getElementById('inp-hashtag').value.trim(),
+      weekend: {
+        dates: parseDates(document.getElementById('inp-weekend-dates').value),
+        time: document.getElementById('inp-weekend-time').value.trim(),
+        place: document.getElementById('inp-weekend-place').value.trim()
+      },
+      weekday: {
+        dates: parseDates(document.getElementById('inp-weekday-dates').value),
+        time: document.getElementById('inp-weekday-time').value.trim(),
+        place: document.getElementById('inp-weekday-place').value.trim()
+      },
+      specials: []
+    };
+
+    // specials 폼 수집 (같은 날짜 여러개 가능)
+    const specialsMap = {};
+    document.querySelectorAll('.special-row').forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      const d = parseInt(inputs[0].value);
+      const label = inputs[1].value.trim();
+      const place = inputs[2].value.trim();
+      if (!isNaN(d) && d >= 1 && label) {
+        if (!specialsMap[d]) specialsMap[d] = [];
+        specialsMap[d].push({ day: d, label, place });
+      }
+    });
+    // flat
+    cfg.specials = Object.values(specialsMap).flat();
+
+    generateFromConfig(cfg);
+  }
+
+  // 페이지 로드
+  window.onload = async () => {
+    try {
+      const cfg = await loadConfig();
+      applyConfigToForm(cfg);      // 설정 패널 값도 같이 세팅(편의)
+      generateFromConfig(cfg);     // 화면 렌더
+      enterNoticeMode();
+    } catch (e) {
+      console.error(e);
+      // config.json이 없거나 로드 실패하면 기존 폼값으로라도 렌더
+      generate();
+      enterNoticeMode();
+    }
   };
 </script>
+
 </body>
 </html>
