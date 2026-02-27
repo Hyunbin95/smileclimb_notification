@@ -328,6 +328,18 @@
   </style>
 </head>
 <body>
+  <!-- ✅ 운영진 전용 관리자 바 -->
+<div id="adminBar" style="display:none; max-width:680px; margin:0 auto 10px; gap:8px; justify-content:flex-end;">
+  <button onclick="openIdentity()" style="background:#222;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;">
+    🔐 운영진 로그인/계정
+  </button>
+  <button id="btnPreview" onclick="adminPreview()" style="display:none;background:#7BC67E;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">
+    👀 미리보기
+  </button>
+  <button id="btnApply" onclick="adminApply()" style="display:none;background:#F4A261;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">
+    ✅ 적용(커밋)
+  </button>
+</div>
 
   <!-- 공지 모드 복귀 -->
   <div class="notice-exit" style="display:none;">
