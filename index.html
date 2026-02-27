@@ -776,13 +776,41 @@
 </script>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script>
-  if (window.netlifyIdentity) {
+  (function () {
+    // 1) 위젯 로드 확인
+    if (!window.netlifyIdentity) {
+      console.error("[Identity] widget not loaded");
+      return;
+    }
+
+    // 2) URL 토큰 확인
+    const params = new URLSearchParams(window.location.search);
+    const inviteToken = params.get("invite_token");
+    console.log("[Identity] invite_token =", inviteToken);
+
+    // 3) init (중요)
     window.netlifyIdentity.init();
 
-    // 초대 링크로 들어오면 자동으로 가입/로그인 창 열기
-    const hasInvite = new URLSearchParams(window.location.search).has("invite_token");
-    if (hasInvite) window.netlifyIdentity.open("signup");
-  }
+    // 4) init 완료 시점에 처리 (타이밍 이슈 방지)
+    window.netlifyIdentity.on("init", function (user) {
+      console.log("[Identity init] user =", user);
+
+      // 초대 토큰이 있으면 무조건 signup(비번 설정) 모달 열기
+      if (inviteToken) {
+        window.netlifyIdentity.open("signup");
+      }
+    });
+
+    // 5) 비번 설정/회원가입 완료 후 로그인되면 admin으로 보내기(편의)
+    window.netlifyIdentity.on("login", function () {
+      console.log("[Identity] login success -> /admin");
+      window.location.href = "/admin/";
+    });
+
+    window.netlifyIdentity.on("error", function (err) {
+      console.error("[Identity error]", err);
+    });
+  })();
 </script>
 
 </body>
