@@ -9,5 +9,8 @@
     <!-- Decap CMS (body 끝에서 로드) -->
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+    <script>
+      if (window.netlifyIdentity) window.netlifyIdentity.init();
+    </script>
   </body>
 </html>
