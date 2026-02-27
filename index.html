@@ -208,18 +208,13 @@
     .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
 
     /* Calendar */
-    /* ✅ 여백 좀 줄이기 */
     .calendar-section { padding: 14px 14px 14px; }
-
     .day-headers { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; margin-bottom: 6px; }
     .day-headers div { font-size: 12px; font-weight: 700; padding: 4px 0; color: #888; }
     .day-headers .sun { color: #e25555; }
     .day-headers .sat { color: #4a90d9; }
-
-    /* ✅ gap 줄이기 */
     .calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
 
-    /* ✅ 셀 높이/패딩 줄이기 */
     .cell {
       border-radius: 11px;
       padding: 5px 4px 6px;
@@ -235,7 +230,6 @@
     .cell.sun .date-num { color: #e25555; }
     .cell.sat .date-num { color: #4a90d9; }
 
-    /* ✅ 배지: 글자는 그대로, 범위 벗어나면 줄바꿈(밑으로 이어쓰기) */
     .badge {
       font-size: 10px; font-weight: 700;
       border-radius: 12px;
@@ -243,28 +237,26 @@
       margin-top: 3px;
       text-align: center;
       max-width: 100%;
-
-      white-space: normal;        /* ✅ 줄바꿈 허용 */
-      word-break: keep-all;       /* ✅ 한글 단어는 가능하면 유지 */
-      overflow-wrap: anywhere;    /* ✅ 너무 길면 어쩔 수 없이 끊기 */
+      white-space: normal;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
       line-height: 1.15;
     }
 
-    /* 🔥 주말/평일은 바 형태로 */
     .badge.weekend{
-      width: 90%;          /* 넓게 */
-      height: 7px;         /* 얇은 바 */
-      padding: 0;          /* 텍스트 공간 제거 */
+      width: 90%;
+      height: 7px;
+      padding: 0;
       border-radius: 6px;
-      font-size: 0;        /* 🔥 텍스트 안 보이게 */
+      font-size: 0;
       margin-top: 4px;
     }
     .badge.weekday {
-      width: 90%;          /* 넓게 */
-      height: 7px;         /* 얇은 바 */
-      padding: 0;          /* 텍스트 공간 제거 */
+      width: 90%;
+      height: 7px;
+      padding: 0;
       border-radius: 6px;
-      font-size: 0;        /* 🔥 텍스트 안 보이게 */
+      font-size: 0;
       margin-top: 4px;
     }
 
@@ -328,18 +320,19 @@
   </style>
 </head>
 <body>
+
   <!-- ✅ 운영진 전용 관리자 바 -->
-<div id="adminBar" style="display:none; max-width:680px; margin:0 auto 10px; gap:8px; justify-content:flex-end;">
-  <button onclick="openIdentity()" style="background:#222;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;">
-    🔐 운영진 로그인/계정
-  </button>
-  <button id="btnPreview" onclick="adminPreview()" style="display:none;background:#7BC67E;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">
-    👀 미리보기
-  </button>
-  <button id="btnApply" onclick="adminApply()" style="display:none;background:#F4A261;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">
-    ✅ 적용(커밋)
-  </button>
-</div>
+  <div id="adminBar" style="display:none; max-width:680px; margin:0 auto 10px; gap:8px; justify-content:flex-end;">
+    <button onclick="openIdentity()" style="background:#222;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;">
+      🔐 운영진 로그인/계정
+    </button>
+    <button id="btnPreview" onclick="adminPreview()" style="display:none;background:#7BC67E;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">
+      👀 미리보기
+    </button>
+    <button id="btnApply" onclick="adminApply()" style="display:none;background:#F4A261;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">
+      ✅ 적용(커밋)
+    </button>
+  </div>
 
   <!-- 공지 모드 복귀 -->
   <div class="notice-exit" style="display:none;">
@@ -482,519 +475,452 @@
       <strong>SMILE CLIMBING CREW</strong> &nbsp;|&nbsp; 문의: 카카오톡 오픈채팅 &nbsp;|&nbsp; #스마일클라이밍
     </div>
   </div>
-<script>
-  // ─── 설정 패널 토글 ───
-  function toggleSettings() {
-    const panel = document.getElementById('settingsPanel');
-    const btn   = document.getElementById('toggleBtn');
-    panel.classList.toggle('open');
-    btn.classList.toggle('open');
-  }
 
-  // ─── 특별 일정 행 추가/제거 (UI는 유지하되, "로컬 미리보기용"으로만 둠) ───
-  function addSpecial() {
-    const list = document.getElementById('specialList');
-    const row = document.createElement('div');
-    row.className = 'special-row';
-    row.innerHTML = `
-      <input class="date-input" type="number" placeholder="날짜" min="1" max="31"
-        style="border:1.5px solid #ddd;border-radius:9px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;background:#fafafa;max-width:80px;"/>
-      <input type="text" placeholder="내용 (예: 번개, 대회 참가)"
-        style="border:1.5px solid #ddd;border-radius:9px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;flex:1;background:#fafafa;"/>
-      <input type="text" placeholder="장소 (선택)"
-        style="border:1.5px solid #ddd;border-radius:9px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;flex:1;background:#fafafa;"/>
-      <button class="btn-remove" onclick="removeSpecial(this)">×</button>`;
-    list.appendChild(row);
-  }
+  <!-- ✅ Identity 위젯은 딱 1번만 로드 -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
-  function removeSpecial(btn) {
-    const rows = document.querySelectorAll('.special-row');
-    if (rows.length > 1) btn.parentElement.remove();
-    else { btn.parentElement.querySelectorAll('input').forEach(i => i.value = ''); }
-  }
+  <script>
+    /***********************
+     * 0) 운영진 설정
+     ***********************/
+    // ✅ 운영진 이메일 화이트리스트 (운영진 이메일 받으면 여기에 추가)
+    const ADMIN_EMAILS = [
+      "dlgusqls44@gmail.com",
+      // "admin2@example.com",
+    ];
 
-  // ─── 공지 모드 ───
-  function enterNoticeMode() {
-    document.body.classList.add('notice-mode');
-    window.scrollTo({ top: document.getElementById('calendarCard').offsetTop - 20, behavior: 'smooth' });
-  }
-  function exitNoticeMode() { document.body.classList.remove('notice-mode'); }
-
-  // ─── 쉼표 구분 날짜 파싱 ───
-  function parseDates(str) {
-    if (!str || !str.trim()) return [];
-    return str.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 31);
-  }
-
-  // ─── config.json 로드 ───
-  async function loadConfig() {
-    // 캐시 방지: GitHub Pages/브라우저 캐시 때문에 "왜 안 바뀌지?" 방지용
-    const url = `./config.json?v=${Date.now()}`;
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`config.json load failed: ${res.status}`);
-    return await res.json();
-  }
-
-  // ─── UI 폼에 config 값 세팅 (옵션: 설정패널 켜서 쓸 때 편하게) ───
-  function applyConfigToForm(cfg) {
-    // 설정 패널이 display:none 이어도 값 세팅은 됨
-    document.getElementById('inp-year').value = cfg.year ?? new Date().getFullYear();
-    document.getElementById('inp-month').value = cfg.month ?? (new Date().getMonth() + 1);
-
-    const weekend = cfg.weekend ?? {};
-    const weekday = cfg.weekday ?? {};
-
-    document.getElementById('inp-weekend-dates').value = Array.isArray(weekend.dates) ? weekend.dates.join(', ') : '';
-    document.getElementById('inp-weekend-time').value  = weekend.time ?? '';
-    document.getElementById('inp-weekend-place').value = weekend.place ?? '';
-
-    document.getElementById('inp-weekday-dates').value = Array.isArray(weekday.dates) ? weekday.dates.join(', ') : '';
-    document.getElementById('inp-weekday-time').value  = weekday.time ?? '';
-    document.getElementById('inp-weekday-place').value = weekday.place ?? '';
-
-    document.getElementById('inp-contact').value = cfg.contact ?? '카카오톡 오픈채팅';
-    document.getElementById('inp-hashtag').value = cfg.hashtag ?? '#싱글벙클';
-
-    // specials UI 채우기
-    const list = document.getElementById('specialList');
-    list.innerHTML = '';
-    const specials = Array.isArray(cfg.specials) ? cfg.specials : [];
-    if (specials.length === 0) addSpecial();
-    specials.forEach(s => {
-      addSpecial();
-      const rows = document.querySelectorAll('.special-row');
-      const row = rows[rows.length - 1];
-      const inputs = row.querySelectorAll('input');
-      inputs[0].value = s.day ?? '';
-      inputs[1].value = s.label ?? '';
-      inputs[2].value = s.place ?? '';
-    });
-  }
-
-  // ─── config 기반으로 달력 생성 ───
-  function generateFromConfig(cfg) {
-    const year  = parseInt(cfg.year);
-    const month = parseInt(cfg.month);
-
-    const contact = (cfg.contact ?? '').toString().trim();
-    const hashtag = (cfg.hashtag ?? '').toString().trim();
-
-    const weekend = cfg.weekend ?? {};
-    const weekday = cfg.weekday ?? {};
-
-    const weekendDates = Array.isArray(weekend.dates) ? weekend.dates : [];
-    const weekdayDates = Array.isArray(weekday.dates) ? weekday.dates : [];
-
-    const weekendTime  = (weekend.time ?? '').toString().trim();
-    const weekendPlace = (weekend.place ?? '').toString().trim();
-
-    const weekdayTime  = (weekday.time ?? '').toString().trim();
-    const weekdayPlace = (weekday.place ?? '').toString().trim();
-
-    // ✅ 특별 일정 수집: 같은 날짜 여러개 저장
-    const specials = {}; // { [day]: [{label, place}, ...] }
-    const specialList = Array.isArray(cfg.specials) ? cfg.specials : [];
-    specialList.forEach(item => {
-      const d = parseInt(item.day);
-      const label = (item.label ?? '').toString().trim();
-      const place = (item.place ?? '').toString().trim();
-      if (!isNaN(d) && d >= 1 && d <= 31 && label) {
-        if (!specials[d]) specials[d] = [];
-        specials[d].push({ label, place });
-      }
-    });
-
-    // 헤더 업데이트
-    document.getElementById('hdr-label').textContent = `${year} Schedule`;
-    document.getElementById('hdr-title').innerHTML = `${month}월 <span>정모 일정</span>`;
-
-    // 달력 그리드
-    const grid = document.getElementById('calGrid');
-    grid.innerHTML = '';
-    const today = new Date();
-    const firstDay = new Date(year, month - 1, 1).getDay();
-    const lastDate = new Date(year, month, 0).getDate();
-
-    for (let i = 0; i < firstDay; i++) {
-      const e = document.createElement('div');
-      e.className = 'cell empty';
-      grid.appendChild(e);
+    function openIdentity() {
+      if (window.netlifyIdentity) window.netlifyIdentity.open();
     }
 
-    for (let d = 1; d <= lastDate; d++) {
-      const dow = (firstDay + d - 1) % 7;
-      const cell = document.createElement('div');
-      let cls = 'cell';
-      if (dow === 0) cls += ' sun';
-      if (dow === 6) cls += ' sat';
-      const isToday = (today.getFullYear() === year && today.getMonth() === month - 1 && today.getDate() === d);
-      if (isToday) cls += ' today';
-      cell.className = cls;
+    function isAdminUser(user) {
+      if (!user || !user.email) return false;
+      if (ADMIN_EMAILS.length === 0) return true; // (원하면 전체 운영진 허용)
+      return ADMIN_EMAILS.includes(user.email);
+    }
 
-      const num = document.createElement('div');
-      num.className = 'date-num';
-      num.textContent = d;
-      cell.appendChild(num);
+    function showAdminUI() {
+      const bar = document.getElementById("adminBar");
+      if (bar) bar.style.display = "flex";
 
-      // 주말/평일 바
-      if (weekendDates.includes(d)) {
-        const b = document.createElement('div');
-        b.className = 'badge weekend';
-        b.textContent = '';
-        cell.appendChild(b);
+      // 설정 패널/상단 버튼 활성화
+      const settingsWrap = document.querySelector(".settings-wrap");
+      const noticeExit = document.querySelector(".notice-exit");
+      const topActions = document.querySelector(".top-actions");
+
+      if (settingsWrap) settingsWrap.style.display = "block";
+      if (noticeExit) noticeExit.style.display = "block";
+      if (topActions) topActions.style.display = "flex";
+
+      // 관리자 버튼 활성화
+      const btnPreview = document.getElementById("btnPreview");
+      const btnApply = document.getElementById("btnApply");
+      if (btnPreview) btnPreview.style.display = "inline-block";
+      if (btnApply) btnApply.style.display = "inline-block";
+
+      // 운영진은 기본적으로 설정 보이게(캡처모드 해제)
+      document.body.classList.remove('notice-mode');
+    }
+
+    function hideAdminUI() {
+      const bar = document.getElementById("adminBar");
+      if (bar) bar.style.display = "none";
+      // 일반 유저는 캡처 모드로 유지(원하면)
+      document.body.classList.add('notice-mode');
+    }
+
+    function getIdentityToken() {
+      const u = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+      return u && u.token ? u.token.access_token : null;
+    }
+
+    /***********************
+     * 1) UI 동작들(기존)
+     ***********************/
+    function toggleSettings() {
+      const panel = document.getElementById('settingsPanel');
+      const btn   = document.getElementById('toggleBtn');
+      panel.classList.toggle('open');
+      btn.classList.toggle('open');
+    }
+
+    function addSpecial() {
+      const list = document.getElementById('specialList');
+      const row = document.createElement('div');
+      row.className = 'special-row';
+      row.innerHTML = `
+        <input class="date-input" type="number" placeholder="날짜" min="1" max="31"
+          style="border:1.5px solid #ddd;border-radius:9px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;background:#fafafa;max-width:80px;"/>
+        <input type="text" placeholder="내용 (예: 번개, 대회 참가)"
+          style="border:1.5px solid #ddd;border-radius:9px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;flex:1;background:#fafafa;"/>
+        <input type="text" placeholder="장소 (선택)"
+          style="border:1.5px solid #ddd;border-radius:9px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;flex:1;background:#fafafa;"/>
+        <button class="btn-remove" onclick="removeSpecial(this)">×</button>`;
+      list.appendChild(row);
+    }
+
+    function removeSpecial(btn) {
+      const rows = document.querySelectorAll('.special-row');
+      if (rows.length > 1) btn.parentElement.remove();
+      else { btn.parentElement.querySelectorAll('input').forEach(i => i.value = ''); }
+    }
+
+    function enterNoticeMode() {
+      document.body.classList.add('notice-mode');
+      window.scrollTo({ top: document.getElementById('calendarCard').offsetTop - 20, behavior: 'smooth' });
+    }
+    function exitNoticeMode() { document.body.classList.remove('notice-mode'); }
+
+    function parseDates(str) {
+      if (!str || !str.trim()) return [];
+      return str.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 31);
+    }
+
+    /***********************
+     * 2) config.json 로드/적용
+     ***********************/
+    async function loadConfig() {
+      const url = `./config.json?v=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`config.json load failed: ${res.status}`);
+      return await res.json();
+    }
+
+    function applyConfigToForm(cfg) {
+      document.getElementById('inp-year').value  = cfg.year ?? new Date().getFullYear();
+      document.getElementById('inp-month').value = cfg.month ?? (new Date().getMonth() + 1);
+
+      const weekend = cfg.weekend ?? {};
+      const weekday = cfg.weekday ?? {};
+
+      document.getElementById('inp-weekend-dates').value = Array.isArray(weekend.dates) ? weekend.dates.join(', ') : '';
+      document.getElementById('inp-weekend-time').value  = weekend.time ?? '';
+      document.getElementById('inp-weekend-place').value = weekend.place ?? '';
+
+      document.getElementById('inp-weekday-dates').value = Array.isArray(weekday.dates) ? weekday.dates.join(', ') : '';
+      document.getElementById('inp-weekday-time').value  = weekday.time ?? '';
+      document.getElementById('inp-weekday-place').value = weekday.place ?? '';
+
+      document.getElementById('inp-contact').value = cfg.contact ?? '카카오톡 오픈채팅';
+      document.getElementById('inp-hashtag').value = cfg.hashtag ?? '#싱글벙클';
+
+      const list = document.getElementById('specialList');
+      list.innerHTML = '';
+      const specials = Array.isArray(cfg.specials) ? cfg.specials : [];
+      if (specials.length === 0) addSpecial();
+      specials.forEach(s => {
+        addSpecial();
+        const rows = document.querySelectorAll('.special-row');
+        const row = rows[rows.length - 1];
+        const inputs = row.querySelectorAll('input');
+        inputs[0].value = s.day ?? '';
+        inputs[1].value = s.label ?? '';
+        inputs[2].value = s.place ?? '';
+      });
+    }
+
+    /***********************
+     * 3) 렌더(달력 생성)
+     ***********************/
+    function generateFromConfig(cfg) {
+      const year  = parseInt(cfg.year);
+      const month = parseInt(cfg.month);
+
+      const contact = (cfg.contact ?? '').toString().trim();
+      const hashtag = (cfg.hashtag ?? '').toString().trim();
+
+      const weekend = cfg.weekend ?? {};
+      const weekday = cfg.weekday ?? {};
+
+      const weekendDates = Array.isArray(weekend.dates) ? weekend.dates : [];
+      const weekdayDates = Array.isArray(weekday.dates) ? weekday.dates : [];
+
+      const weekendTime  = (weekend.time ?? '').toString().trim();
+      const weekendPlace = (weekend.place ?? '').toString().trim();
+
+      const weekdayTime  = (weekday.time ?? '').toString().trim();
+      const weekdayPlace = (weekday.place ?? '').toString().trim();
+
+      // specials: { day: [{label, place}] }
+      const specials = {};
+      const specialList = Array.isArray(cfg.specials) ? cfg.specials : [];
+      specialList.forEach(item => {
+        const d = parseInt(item.day);
+        const label = (item.label ?? '').toString().trim();
+        const place = (item.place ?? '').toString().trim();
+        if (!isNaN(d) && d >= 1 && d <= 31 && label) {
+          if (!specials[d]) specials[d] = [];
+          specials[d].push({ label, place });
+        }
+      });
+
+      document.getElementById('hdr-label').textContent = `${year} Schedule`;
+      document.getElementById('hdr-title').innerHTML = `${month}월 <span>정모 일정</span>`;
+
+      const grid = document.getElementById('calGrid');
+      grid.innerHTML = '';
+      const today = new Date();
+      const firstDay = new Date(year, month - 1, 1).getDay();
+      const lastDate = new Date(year, month, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        const e = document.createElement('div');
+        e.className = 'cell empty';
+        grid.appendChild(e);
       }
-      if (weekdayDates.includes(d)) {
-        const b = document.createElement('div');
-        b.className = 'badge weekday';
-        b.textContent = '';
-        cell.appendChild(b);
-      }
 
-      // ✅ 같은 날짜 특별일정 여러개면 배지도 여러개
-      if (specials[d] && specials[d].length > 0) {
-        specials[d].forEach(item => {
+      for (let d = 1; d <= lastDate; d++) {
+        const dow = (firstDay + d - 1) % 7;
+        const cell = document.createElement('div');
+        let cls = 'cell';
+        if (dow === 0) cls += ' sun';
+        if (dow === 6) cls += ' sat';
+        const isToday = (today.getFullYear() === year && today.getMonth() === month - 1 && today.getDate() === d);
+        if (isToday) cls += ' today';
+        cell.className = cls;
+
+        const num = document.createElement('div');
+        num.className = 'date-num';
+        num.textContent = d;
+        cell.appendChild(num);
+
+        if (weekendDates.includes(d)) {
           const b = document.createElement('div');
-          b.className = 'badge special';
-          b.textContent = item.label;
+          b.className = 'badge weekend';
+          b.textContent = '';
           cell.appendChild(b);
+        }
+        if (weekdayDates.includes(d)) {
+          const b = document.createElement('div');
+          b.className = 'badge weekday';
+          b.textContent = '';
+          cell.appendChild(b);
+        }
+
+        if (specials[d] && specials[d].length > 0) {
+          specials[d].forEach(item => {
+            const b = document.createElement('div');
+            b.className = 'badge special';
+            b.textContent = item.label;
+            cell.appendChild(b);
+          });
+        }
+
+        grid.appendChild(cell);
+      }
+
+      const info = document.getElementById('infoSection');
+      info.innerHTML = '';
+
+      if (weekendDates.length > 0) {
+        const dateStr = weekendDates.map(d => `${month}/${d}`).join(', ');
+        const timeStr = weekendTime || '추후 공지';
+        const placeStr = weekendPlace || '추후 공지 (카톡방 확인)';
+        info.innerHTML += `
+          <div class="info-card green">
+            <div class="icon">🧗</div>
+            <div class="body">
+              <strong>주말 정모 — ${dateStr}</strong>
+              <span>⏰ ${timeStr} 집합 &nbsp;|&nbsp; 📍 ${placeStr}</span>
+            </div>
+          </div>`;
+      }
+
+      if (weekdayDates.length > 0) {
+        const dateStr = weekdayDates.map(d => `${month}/${d}`).join(', ');
+        const timeStr = weekdayTime || '추후 공지';
+        const placeStr = weekdayPlace || '추후 공지 (카톡방 확인)';
+        info.innerHTML += `
+          <div class="info-card orange">
+            <div class="icon">🏋️</div>
+            <div class="body">
+              <strong>평일 정모 — ${dateStr}</strong>
+              <span>⏰ ${timeStr} 집합 &nbsp;|&nbsp; 📍 ${placeStr}</span>
+            </div>
+          </div>`;
+      }
+
+      const specialDays = Object.keys(specials).map(k => parseInt(k)).sort((a,b) => a-b);
+      if (specialDays.length > 0) {
+        const rows = specialDays.map(day => {
+          return specials[day].map(v => {
+            let line = `<strong>⭐ ${month}/${day} — ${v.label}</strong>`;
+            if (v.place) line += `<span>🧗 ${v.place}</span>`;
+            return line;
+          }).join('');
+        }).join('');
+
+        info.innerHTML += `
+          <div class="info-card purple">
+            <div class="icon">⭐</div>
+            <div class="body">${rows}</div>
+          </div>`;
+      }
+
+      if (weekendDates.length === 0 && weekdayDates.length === 0 && specialDays.length === 0) {
+        info.innerHTML = `
+          <div class="info-card blue">
+            <div class="icon">ℹ️</div>
+            <div class="body">
+              <strong>일정 안내</strong>
+              <span>config.json에 일정을 입력 후 새로고침 해주세요.</span>
+            </div>
+          </div>`;
+      }
+
+      document.getElementById('footerSection').innerHTML =
+        `<strong>SMILE CLIMBING CREW</strong> &nbsp;|&nbsp; 문의: ${contact || '카카오톡 오픈채팅'} &nbsp;|&nbsp; ${hashtag || '#싱글벙클'}`;
+    }
+
+    /***********************
+     * 4) 폼 -> config 생성 (운영진 미리보기/적용용)
+     ***********************/
+    function buildConfigFromForm() {
+      const cfg = {
+        year: parseInt(document.getElementById('inp-year').value),
+        month: parseInt(document.getElementById('inp-month').value),
+        contact: document.getElementById('inp-contact').value.trim(),
+        hashtag: document.getElementById('inp-hashtag').value.trim(),
+        weekend: {
+          dates: parseDates(document.getElementById('inp-weekend-dates').value),
+          time: document.getElementById('inp-weekend-time').value.trim(),
+          place: document.getElementById('inp-weekend-place').value.trim()
+        },
+        weekday: {
+          dates: parseDates(document.getElementById('inp-weekday-dates').value),
+          time: document.getElementById('inp-weekday-time').value.trim(),
+          place: document.getElementById('inp-weekday-place').value.trim()
+        },
+        specials: []
+      };
+
+      // specials 폼 수집(같은 날짜 여러개 가능)
+      const specialsMap = {};
+      document.querySelectorAll('.special-row').forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const d = parseInt(inputs[0].value);
+        const label = (inputs[1].value || '').trim();
+        const place = (inputs[2].value || '').trim();
+        if (!isNaN(d) && d >= 1 && d <= 31 && label) {
+          if (!specialsMap[d]) specialsMap[d] = [];
+          specialsMap[d].push({ day: d, label, place });
+        }
+      });
+      cfg.specials = Object.values(specialsMap).flat();
+
+      return cfg;
+    }
+
+    // 설정패널의 "달력 생성하기" 버튼은 미리보기로 유지
+    function generate() {
+      const cfg = buildConfigFromForm();
+      generateFromConfig(cfg);
+      document.getElementById('calendarCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /***********************
+     * 5) 운영진 버튼 동작
+     ***********************/
+    function adminPreview() {
+      generate();
+    }
+
+    async function adminApply() {
+      try {
+        const token = getIdentityToken();
+        if (!token) throw new Error("운영진 로그인 후에 적용할 수 있어요.");
+
+        const config = buildConfigFromForm();
+
+        const res = await fetch("/.netlify/functions/update-config", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({
+            config,
+            message: `Update schedule via index.html`
+          })
+        });
+
+        if (!res.ok) {
+          const t = await res.text();
+          throw new Error(`커밋 실패: ${res.status} ${t}`);
+        }
+
+        alert("적용 완료! (GitHub에 커밋됨)\n배포 반영까지 잠시 후 자동 반영돼요.");
+      } catch (e) {
+        alert(e.message || String(e));
+      }
+    }
+
+    /***********************
+     * 6) 초대 링크(invite_token) 처리
+     ***********************/
+    function getInviteToken() {
+      // 1) ?invite_token=...
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.has("invite_token")) return sp.get("invite_token");
+
+      // 2) #invite_token=... or #...invite_token=...
+      const hash = window.location.hash || "";
+      const idx = hash.indexOf("invite_token=");
+      if (idx >= 0) {
+        return hash.slice(idx).split("invite_token=")[1]?.split("&")[0] || null;
+      }
+      return null;
+    }
+
+    /***********************
+     * 7) 초기 로드: config.json -> 폼/렌더
+     ***********************/
+    window.addEventListener("load", async () => {
+      // (A) 기본은 일반 유저 모드
+      enterNoticeMode();
+
+      // (B) config.json 로드해서 화면 렌더
+      try {
+        const cfg = await loadConfig();
+        applyConfigToForm(cfg);
+        generateFromConfig(cfg);
+      } catch (e) {
+        console.error(e);
+        // config가 없으면 폼 값 기반으로라도 렌더
+        generate();
+      }
+
+      // (C) Identity 초기화 + 운영진 게이트 + 초대 처리
+      if (!window.netlifyIdentity) return;
+      window.netlifyIdentity.init();
+
+      const inviteToken = getInviteToken();
+      if (inviteToken) {
+        // 초대 토큰이 있으면 비번 설정 모달 오픈
+        window.netlifyIdentity.on("init", () => {
+          window.netlifyIdentity.open("signup");
         });
       }
 
-      grid.appendChild(cell);
-    }
-
-    // 정보 카드
-    const info = document.getElementById('infoSection');
-    info.innerHTML = '';
-
-    if (weekendDates.length > 0) {
-      const dateStr = weekendDates.map(d => `${month}/${d}`).join(', ');
-      const timeStr = weekendTime || '추후 공지';
-      const placeStr = weekendPlace || '추후 공지 (카톡방 확인)';
-      info.innerHTML += `
-        <div class="info-card green">
-          <div class="icon">🧗</div>
-          <div class="body">
-            <strong>주말 정모 — ${dateStr}</strong>
-            <span>⏰ ${timeStr} 집합 &nbsp;|&nbsp; 📍 ${placeStr}</span>
-          </div>
-        </div>`;
-    }
-
-    if (weekdayDates.length > 0) {
-      const dateStr = weekdayDates.map(d => `${month}/${d}`).join(', ');
-      const timeStr = weekdayTime || '추후 공지';
-      const placeStr = weekdayPlace || '추후 공지 (카톡방 확인)';
-      info.innerHTML += `
-        <div class="info-card orange">
-          <div class="icon">🏋️</div>
-          <div class="body">
-            <strong>평일 정모 — ${dateStr}</strong>
-            <span>⏰ ${timeStr} 집합 &nbsp;|&nbsp; 📍 ${placeStr}</span>
-          </div>
-        </div>`;
-    }
-
-    const specialDays = Object.keys(specials).map(k => parseInt(k)).sort((a,b) => a-b);
-    if (specialDays.length > 0) {
-      const rows = specialDays.map(day => {
-        return specials[day].map(v => {
-          let line = `<strong>⭐ ${month}/${day} — ${v.label}</strong>`;
-          if (v.place) line += `<span>🧗 ${v.place}</span>`;
-          return line;
-        }).join('');
-      }).join('');
-
-      info.innerHTML += `
-        <div class="info-card purple">
-          <div class="icon">⭐</div>
-          <div class="body">${rows}</div>
-        </div>`;
-    }
-
-    if (weekendDates.length === 0 && weekdayDates.length === 0 && specialDays.length === 0) {
-      info.innerHTML = `
-        <div class="info-card blue">
-          <div class="icon">ℹ️</div>
-          <div class="body">
-            <strong>일정 안내</strong>
-            <span>config.json에 일정을 입력 후 새로고침 해주세요.</span>
-          </div>
-        </div>`;
-    }
-
-    // 푸터
-    document.getElementById('footerSection').innerHTML =
-      `<strong>SMILE CLIMBING CREW</strong> &nbsp;|&nbsp; 문의: ${contact || '카카오톡 오픈채팅'} &nbsp;|&nbsp; ${hashtag || '#싱글벙클'}`;
-
-    // 달력 카드로 스크롤
-    document.getElementById('calendarCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  // (옵션) 설정패널에서 "달력 생성하기" 버튼을 눌렀을 때도 동작은 하게 유지
-  //  - 단, 이건 "미리보기" 수준이고, 실제 공유/저장은 config.json을 수정해서 커밋하는 방식 추천
-  function generate() {
-    const cfg = {
-      year: parseInt(document.getElementById('inp-year').value),
-      month: parseInt(document.getElementById('inp-month').value),
-      contact: document.getElementById('inp-contact').value.trim(),
-      hashtag: document.getElementById('inp-hashtag').value.trim(),
-      weekend: {
-        dates: parseDates(document.getElementById('inp-weekend-dates').value),
-        time: document.getElementById('inp-weekend-time').value.trim(),
-        place: document.getElementById('inp-weekend-place').value.trim()
-      },
-      weekday: {
-        dates: parseDates(document.getElementById('inp-weekday-dates').value),
-        time: document.getElementById('inp-weekday-time').value.trim(),
-        place: document.getElementById('inp-weekday-place').value.trim()
-      },
-      specials: []
-    };
-
-    // specials 폼 수집 (같은 날짜 여러개 가능)
-    const specialsMap = {};
-    document.querySelectorAll('.special-row').forEach(row => {
-      const inputs = row.querySelectorAll('input');
-      const d = parseInt(inputs[0].value);
-      const label = inputs[1].value.trim();
-      const place = inputs[2].value.trim();
-      if (!isNaN(d) && d >= 1 && label) {
-        if (!specialsMap[d]) specialsMap[d] = [];
-        specialsMap[d].push({ day: d, label, place });
-      }
-    });
-    // flat
-    cfg.specials = Object.values(specialsMap).flat();
-
-    generateFromConfig(cfg);
-  }
-
-  // 페이지 로드
-  window.onload = async () => {
-    try {
-      const cfg = await loadConfig();
-      applyConfigToForm(cfg);      // 설정 패널 값도 같이 세팅(편의)
-      generateFromConfig(cfg);     // 화면 렌더
-      enterNoticeMode();
-    } catch (e) {
-      console.error(e);
-      // config.json이 없거나 로드 실패하면 기존 폼값으로라도 렌더
-      generate();
-      enterNoticeMode();
-    }
-  };
-  
-</script>
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-<script>
-  (function () {
-    // 1) 위젯 로드 확인
-    if (!window.netlifyIdentity) {
-      console.error("[Identity] widget not loaded");
-      return;
-    }
-
-    // 2) URL 토큰 확인
-    const params = new URLSearchParams(window.location.search);
-    const inviteToken = params.get("invite_token");
-    console.log("[Identity] invite_token =", inviteToken);
-
-    // 3) init (중요)
-    window.netlifyIdentity.init();
-
-    // 4) init 완료 시점에 처리 (타이밍 이슈 방지)
-    window.netlifyIdentity.on("init", function (user) {
-      console.log("[Identity init] user =", user);
-
-      // 초대 토큰이 있으면 무조건 signup(비번 설정) 모달 열기
-      if (inviteToken) {
-        window.netlifyIdentity.open("signup");
-      }
-    });
-
-    // 5) 비번 설정/회원가입 완료 후 로그인되면 admin으로 보내기(편의)
-    window.netlifyIdentity.on("login", function () {
-      console.log("[Identity] login success -> /admin");
-      window.location.href = "/admin/";
-    });
-
-    window.netlifyIdentity.on("error", function (err) {
-      console.error("[Identity error]", err);
-    });
-  })();
-</script>
-<script>
-  // ✅ 운영진 이메일 화이트리스트(원하면 여기서도 추가로 잠금)
-  const ADMIN_EMAILS = [
-    "dlgusqls44@gmail.com"
-    // "운영진2@gmail.com",
-  ];
-
-  function openIdentity() {
-    if (window.netlifyIdentity) window.netlifyIdentity.open();
-  }
-
-  function isAdminUser(user) {
-    if (!user || !user.email) return false;
-    // 1) 이메일로만 운영진 판별(가장 쉬움)
-    if (ADMIN_EMAILS.length === 0) return true;
-    return ADMIN_EMAILS.includes(user.email);
-  }
-
-  function showAdminUI() {
-    // 관리자 바 표시
-    const bar = document.getElementById("adminBar");
-    if (bar) {
-      bar.style.display = "flex";
-      bar.style.display = "flex";
-    }
-
-    // ✅ 설정 패널/상단 버튼 활성화
-    const settingsWrap = document.querySelector(".settings-wrap");
-    const noticeExit = document.querySelector(".notice-exit");
-    const topActions = document.querySelector(".top-actions");
-
-    if (settingsWrap) settingsWrap.style.display = "block";
-    if (noticeExit) noticeExit.style.display = "block"; // 필요하면
-    if (topActions) topActions.style.display = "flex";
-
-    // 관리자 버튼 활성화
-    const btnPreview = document.getElementById("btnPreview");
-    const btnApply = document.getElementById("btnApply");
-    if (btnPreview) btnPreview.style.display = "inline-block";
-    if (btnApply) btnApply.style.display = "inline-block";
-
-    // 운영진은 설정모드로 시작(원하면)
-    document.body.classList.remove('notice-mode');
-  }
-
-  function hideAdminUI() {
-    const bar = document.getElementById("adminBar");
-    if (bar) bar.style.display = "none";
-  }
-
-  function getIdentityToken() {
-    const u = window.netlifyIdentity && window.netlifyIdentity.currentUser();
-    // netlify-identity-widget는 currentUser().token.access_token 형태
-    return u && u.token ? u.token.access_token : null;
-  }
-
-  // ✅ 폼(설정패널) 값으로 config.json 객체 만들기
-  // 너 generate() 안에 이미 값 읽는 로직이 있으니까, 그 로직을 "객체 생성"으로 분리해서 여기서 재사용하는 게 깔끔함.
-  function buildConfigFromForm() {
-    const year  = parseInt(document.getElementById('inp-year').value);
-    const month = parseInt(document.getElementById('inp-month').value);
-
-    const contact = document.getElementById('inp-contact').value.trim();
-    const hashtag = document.getElementById('inp-hashtag').value.trim();
-
-    const weekendDates = parseDates(document.getElementById('inp-weekend-dates').value);
-    const weekdayDates = parseDates(document.getElementById('inp-weekday-dates').value);
-
-    const weekendTime  = document.getElementById('inp-weekend-time').value.trim();
-    const weekendPlace = document.getElementById('inp-weekend-place').value.trim();
-
-    const weekdayTime  = document.getElementById('inp-weekday-time').value.trim();
-    const weekdayPlace = document.getElementById('inp-weekday-place').value.trim();
-
-    // 특별 일정 수집(같은 날짜 여러개 가능)
-    const specials = [];
-    document.querySelectorAll('.special-row').forEach(row => {
-      const inputs = row.querySelectorAll('input');
-      const d = parseInt(inputs[0].value);
-      const label = (inputs[1].value || '').trim();
-      const place = (inputs[2].value || '').trim();
-      if (!isNaN(d) && d >= 1 && d <= 31 && label) {
-        specials.push({ day: d, label, place });
-      }
-    });
-
-    // 네 기존 DEFAULT_*을 그대로 적용하고 싶으면 여기서 fallback 처리도 가능
-    return {
-      year,
-      month,
-      contact,
-      hashtag,
-      weekend: {
-        dates: weekendDates.length ? weekendDates : (DEFAULT_WEEKEND?.dates || []),
-        time: weekendTime || (DEFAULT_WEEKEND?.time || ""),
-        place: weekendPlace || (DEFAULT_WEEKEND?.place || "")
-      },
-      weekday: {
-        dates: weekdayDates.length ? weekdayDates : (DEFAULT_WEEKDAY?.dates || []),
-        time: weekdayTime || (DEFAULT_WEEKDAY?.time || ""),
-        place: weekdayPlace || (DEFAULT_WEEKDAY?.place || "")
-      },
-      specials
-    };
-  }
-
-  // ✅ 운영진: 미리보기 (현재 폼 값으로 화면 렌더)
-  function adminPreview() {
-    // 기존 generate()가 폼->렌더까지 하니까 그냥 호출해도 됨
-    generate();
-    // 운영진은 캡처 모드 안 들어가도 되면 원하면 여기서 notice-mode 해제 가능
-  }
-
-  // ✅ 운영진: 적용(커밋) (폼 값 → config.json 커밋)
-  async function adminApply() {
-    try {
-      const token = getIdentityToken();
-      if (!token) throw new Error("운영진 로그인 후에 적용할 수 있어요.");
-
-      const config = buildConfigFromForm();
-
-      // 서버리스 함수 호출
-      const res = await fetch("/.netlify/functions/update-config", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({
-          config,
-          message: `Update schedule via index.html`
-        })
+      window.netlifyIdentity.on("init", (user) => {
+        if (isAdminUser(user)) showAdminUI();
+        else hideAdminUI();
       });
 
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(`커밋 실패: ${res.status} ${t}`);
-      }
+      window.netlifyIdentity.on("login", (user) => {
+        if (isAdminUser(user)) {
+          showAdminUI();
+        } else {
+          alert("운영진 권한이 없습니다.");
+          window.netlifyIdentity.logout();
+          hideAdminUI();
+        }
+      });
 
-      alert("적용 완료! (GitHub에 커밋됨)\n배포 반영까지 잠시 후 자동 반영돼요.");
-    } catch (e) {
-      alert(e.message || String(e));
-    }
-  }
-
-  // ✅ Identity 초기화: 로그인된 운영진이면 설정패널 보이게
-  (function initIdentityAdminGate() {
-    if (!window.netlifyIdentity) return;
-    window.netlifyIdentity.init();
-
-    window.netlifyIdentity.on("init", (user) => {
-      if (isAdminUser(user)) showAdminUI();
-      else hideAdminUI();
-    });
-
-    window.netlifyIdentity.on("login", (user) => {
-      if (isAdminUser(user)) showAdminUI();
-      else {
-        alert("운영진 권한이 없습니다.");
-        window.netlifyIdentity.logout();
+      window.netlifyIdentity.on("logout", () => {
         hideAdminUI();
-      }
+      });
     });
-
-    window.netlifyIdentity.on("logout", () => {
-      hideAdminUI();
-      // 일반 유저 모드로 돌리고 싶으면
-      // enterNoticeMode();
-    });
-  })();
-</script>
-
+  </script>
 </body>
 </html>
