@@ -812,6 +812,177 @@
     });
   })();
 </script>
+<script>
+  // ✅ 운영진 이메일 화이트리스트(원하면 여기서도 추가로 잠금)
+  const ADMIN_EMAILS = [
+    "dlgusqls44@gmail.com"
+    // "운영진2@gmail.com",
+  ];
+
+  function openIdentity() {
+    if (window.netlifyIdentity) window.netlifyIdentity.open();
+  }
+
+  function isAdminUser(user) {
+    if (!user || !user.email) return false;
+    // 1) 이메일로만 운영진 판별(가장 쉬움)
+    if (ADMIN_EMAILS.length === 0) return true;
+    return ADMIN_EMAILS.includes(user.email);
+  }
+
+  function showAdminUI() {
+    // 관리자 바 표시
+    const bar = document.getElementById("adminBar");
+    if (bar) {
+      bar.style.display = "flex";
+      bar.style.display = "flex";
+    }
+
+    // ✅ 설정 패널/상단 버튼 활성화
+    const settingsWrap = document.querySelector(".settings-wrap");
+    const noticeExit = document.querySelector(".notice-exit");
+    const topActions = document.querySelector(".top-actions");
+
+    if (settingsWrap) settingsWrap.style.display = "block";
+    if (noticeExit) noticeExit.style.display = "block"; // 필요하면
+    if (topActions) topActions.style.display = "flex";
+
+    // 관리자 버튼 활성화
+    const btnPreview = document.getElementById("btnPreview");
+    const btnApply = document.getElementById("btnApply");
+    if (btnPreview) btnPreview.style.display = "inline-block";
+    if (btnApply) btnApply.style.display = "inline-block";
+
+    // 운영진은 설정모드로 시작(원하면)
+    document.body.classList.remove('notice-mode');
+  }
+
+  function hideAdminUI() {
+    const bar = document.getElementById("adminBar");
+    if (bar) bar.style.display = "none";
+  }
+
+  function getIdentityToken() {
+    const u = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+    // netlify-identity-widget는 currentUser().token.access_token 형태
+    return u && u.token ? u.token.access_token : null;
+  }
+
+  // ✅ 폼(설정패널) 값으로 config.json 객체 만들기
+  // 너 generate() 안에 이미 값 읽는 로직이 있으니까, 그 로직을 "객체 생성"으로 분리해서 여기서 재사용하는 게 깔끔함.
+  function buildConfigFromForm() {
+    const year  = parseInt(document.getElementById('inp-year').value);
+    const month = parseInt(document.getElementById('inp-month').value);
+
+    const contact = document.getElementById('inp-contact').value.trim();
+    const hashtag = document.getElementById('inp-hashtag').value.trim();
+
+    const weekendDates = parseDates(document.getElementById('inp-weekend-dates').value);
+    const weekdayDates = parseDates(document.getElementById('inp-weekday-dates').value);
+
+    const weekendTime  = document.getElementById('inp-weekend-time').value.trim();
+    const weekendPlace = document.getElementById('inp-weekend-place').value.trim();
+
+    const weekdayTime  = document.getElementById('inp-weekday-time').value.trim();
+    const weekdayPlace = document.getElementById('inp-weekday-place').value.trim();
+
+    // 특별 일정 수집(같은 날짜 여러개 가능)
+    const specials = [];
+    document.querySelectorAll('.special-row').forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      const d = parseInt(inputs[0].value);
+      const label = (inputs[1].value || '').trim();
+      const place = (inputs[2].value || '').trim();
+      if (!isNaN(d) && d >= 1 && d <= 31 && label) {
+        specials.push({ day: d, label, place });
+      }
+    });
+
+    // 네 기존 DEFAULT_*을 그대로 적용하고 싶으면 여기서 fallback 처리도 가능
+    return {
+      year,
+      month,
+      contact,
+      hashtag,
+      weekend: {
+        dates: weekendDates.length ? weekendDates : (DEFAULT_WEEKEND?.dates || []),
+        time: weekendTime || (DEFAULT_WEEKEND?.time || ""),
+        place: weekendPlace || (DEFAULT_WEEKEND?.place || "")
+      },
+      weekday: {
+        dates: weekdayDates.length ? weekdayDates : (DEFAULT_WEEKDAY?.dates || []),
+        time: weekdayTime || (DEFAULT_WEEKDAY?.time || ""),
+        place: weekdayPlace || (DEFAULT_WEEKDAY?.place || "")
+      },
+      specials
+    };
+  }
+
+  // ✅ 운영진: 미리보기 (현재 폼 값으로 화면 렌더)
+  function adminPreview() {
+    // 기존 generate()가 폼->렌더까지 하니까 그냥 호출해도 됨
+    generate();
+    // 운영진은 캡처 모드 안 들어가도 되면 원하면 여기서 notice-mode 해제 가능
+  }
+
+  // ✅ 운영진: 적용(커밋) (폼 값 → config.json 커밋)
+  async function adminApply() {
+    try {
+      const token = getIdentityToken();
+      if (!token) throw new Error("운영진 로그인 후에 적용할 수 있어요.");
+
+      const config = buildConfigFromForm();
+
+      // 서버리스 함수 호출
+      const res = await fetch("/.netlify/functions/update-config", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+          config,
+          message: `Update schedule via index.html`
+        })
+      });
+
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(`커밋 실패: ${res.status} ${t}`);
+      }
+
+      alert("적용 완료! (GitHub에 커밋됨)\n배포 반영까지 잠시 후 자동 반영돼요.");
+    } catch (e) {
+      alert(e.message || String(e));
+    }
+  }
+
+  // ✅ Identity 초기화: 로그인된 운영진이면 설정패널 보이게
+  (function initIdentityAdminGate() {
+    if (!window.netlifyIdentity) return;
+    window.netlifyIdentity.init();
+
+    window.netlifyIdentity.on("init", (user) => {
+      if (isAdminUser(user)) showAdminUI();
+      else hideAdminUI();
+    });
+
+    window.netlifyIdentity.on("login", (user) => {
+      if (isAdminUser(user)) showAdminUI();
+      else {
+        alert("운영진 권한이 없습니다.");
+        window.netlifyIdentity.logout();
+        hideAdminUI();
+      }
+    });
+
+    window.netlifyIdentity.on("logout", () => {
+      hideAdminUI();
+      // 일반 유저 모드로 돌리고 싶으면
+      // enterNoticeMode();
+    });
+  })();
+</script>
 
 </body>
 </html>
