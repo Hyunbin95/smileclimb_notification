@@ -1,6 +1,5 @@
 backend:
-  name: github
-  repo: Hyunbin95/smileclimb_notification
+  name: git-gateway
   branch: main
 
 media_folder: "assets/uploads"
