@@ -897,45 +897,33 @@
         generate();
       }
     
-     // (C) Identity 초기화 + 운영진 게이트 + 초대 처리
+   // (C) Identity 초기화 + 운영진 게이트 + 초대 처리
     if (!window.netlifyIdentity) return;
     
     const inviteToken = getInviteToken();
     
-    // ✅ 0) 원인 추적용: 에러/닫힘 이벤트 로그
-    window.netlifyIdentity.on("error", (err) => {
-      console.log("[Identity error]", err);
-    });
-    window.netlifyIdentity.on("close", () => {
-      console.log("[Identity close]");
-    });
-    
-    // ✅ 1) 초대 토큰이 있는데 hash가 비어있으면 다시 넣어줌 (중요)
+    // inviteToken이 있는데 hash가 비어있으면 넣어주기만 함
     if (inviteToken && !location.hash.includes("invite_token=")) {
       location.hash = "invite_token=" + encodeURIComponent(inviteToken);
       console.log("[Reinject hash]", location.hash);
     }
     
-    // ✅ 2) init 이벤트 먼저 구독
+    // 디버깅 로그 (원인 파악용)
+    window.netlifyIdentity.on("open", () => console.log("[Identity open]"));
+    window.netlifyIdentity.on("close", () => console.log("[Identity close]"));
+    window.netlifyIdentity.on("error", (e) => console.log("[Identity error]", e));
+    
     window.netlifyIdentity.on("init", (user) => {
       console.log("[Identity init] user=", user);
     
-      // 초대토큰 있으면 signup(비번 설정) 화면 강제 오픈
-      if (inviteToken && !user) {
-        // 위젯이 init 직후 바로 닫히는 케이스가 있어서 한 틱 늦춰서 오픈
-        setTimeout(() => window.netlifyIdentity.open("signup"), 0);
-        return;
-      }
-    
-      // 운영진 UI 게이트
+      // ✅ 여기서 open("signup") 하지 말 것! (겹쳐서 닫히는 원인)
       if (isAdminUser(user)) showAdminUI();
       else hideAdminUI();
     });
     
     window.netlifyIdentity.on("login", (user) => {
-      if (isAdminUser(user)) {
-        showAdminUI();
-      } else {
+      if (isAdminUser(user)) showAdminUI();
+      else {
         alert("운영진 권한이 없습니다.");
         window.netlifyIdentity.logout();
         hideAdminUI();
@@ -944,7 +932,6 @@
     
     window.netlifyIdentity.on("logout", () => hideAdminUI());
     
-    // ✅ 3) 마지막에 init()
     window.netlifyIdentity.init();
     });
   </script>
