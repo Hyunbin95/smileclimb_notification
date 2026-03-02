@@ -886,7 +886,7 @@
     window.addEventListener("load", async () => {
       // (A) 기본은 일반 유저 모드
       enterNoticeMode();
-
+    
       // (B) config.json 로드해서 화면 렌더
       try {
         const cfg = await loadConfig();
@@ -894,27 +894,27 @@
         generateFromConfig(cfg);
       } catch (e) {
         console.error(e);
-        // config가 없으면 폼 값 기반으로라도 렌더
         generate();
       }
-
+    
       // (C) Identity 초기화 + 운영진 게이트 + 초대 처리
       if (!window.netlifyIdentity) return;
-      window.netlifyIdentity.init();
-
+    
       const inviteToken = getInviteToken();
-      if (inviteToken) {
-        // 초대 토큰이 있으면 비번 설정 모달 오픈
-        window.netlifyIdentity.on("init", () => {
-          window.netlifyIdentity.open("signup");
-        });
-      }
-
+    
+      // ✅ init 이벤트를 먼저 구독해야 안 놓침
       window.netlifyIdentity.on("init", (user) => {
+        // 초대 링크면(로그인 전) 비번 설정/가입 화면 열기
+        if (inviteToken && !user) {
+          window.netlifyIdentity.open("signup");
+          return;
+        }
+    
+        // 운영진 UI 게이트
         if (isAdminUser(user)) showAdminUI();
         else hideAdminUI();
       });
-
+    
       window.netlifyIdentity.on("login", (user) => {
         if (isAdminUser(user)) {
           showAdminUI();
@@ -924,10 +924,13 @@
           hideAdminUI();
         }
       });
-
+    
       window.netlifyIdentity.on("logout", () => {
         hideAdminUI();
       });
+    
+      // ✅ 리스너 등록 끝난 다음 init 호출
+      window.netlifyIdentity.init();
     });
   </script>
 </body>
