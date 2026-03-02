@@ -897,40 +897,55 @@
         generate();
       }
     
-      // (C) Identity 초기화 + 운영진 게이트 + 초대 처리
-      if (!window.netlifyIdentity) return;
+     // (C) Identity 초기화 + 운영진 게이트 + 초대 처리
+    if (!window.netlifyIdentity) return;
     
-      const inviteToken = getInviteToken();
+    const inviteToken = getInviteToken();
     
-      // ✅ init 이벤트를 먼저 구독해야 안 놓침
-      window.netlifyIdentity.on("init", (user) => {
-        // 초대 링크면(로그인 전) 비번 설정/가입 화면 열기
-        if (inviteToken && !user) {
-          window.netlifyIdentity.open("signup");
-          return;
-        }
+    // ✅ 0) 원인 추적용: 에러/닫힘 이벤트 로그
+    window.netlifyIdentity.on("error", (err) => {
+      console.log("[Identity error]", err);
+    });
+    window.netlifyIdentity.on("close", () => {
+      console.log("[Identity close]");
+    });
     
-        // 운영진 UI 게이트
-        if (isAdminUser(user)) showAdminUI();
-        else hideAdminUI();
-      });
+    // ✅ 1) 초대 토큰이 있는데 hash가 비어있으면 다시 넣어줌 (중요)
+    if (inviteToken && !location.hash.includes("invite_token=")) {
+      location.hash = "invite_token=" + encodeURIComponent(inviteToken);
+      console.log("[Reinject hash]", location.hash);
+    }
     
-      window.netlifyIdentity.on("login", (user) => {
-        if (isAdminUser(user)) {
-          showAdminUI();
-        } else {
-          alert("운영진 권한이 없습니다.");
-          window.netlifyIdentity.logout();
-          hideAdminUI();
-        }
-      });
+    // ✅ 2) init 이벤트 먼저 구독
+    window.netlifyIdentity.on("init", (user) => {
+      console.log("[Identity init] user=", user);
     
-      window.netlifyIdentity.on("logout", () => {
+      // 초대토큰 있으면 signup(비번 설정) 화면 강제 오픈
+      if (inviteToken && !user) {
+        // 위젯이 init 직후 바로 닫히는 케이스가 있어서 한 틱 늦춰서 오픈
+        setTimeout(() => window.netlifyIdentity.open("signup"), 0);
+        return;
+      }
+    
+      // 운영진 UI 게이트
+      if (isAdminUser(user)) showAdminUI();
+      else hideAdminUI();
+    });
+    
+    window.netlifyIdentity.on("login", (user) => {
+      if (isAdminUser(user)) {
+        showAdminUI();
+      } else {
+        alert("운영진 권한이 없습니다.");
+        window.netlifyIdentity.logout();
         hideAdminUI();
-      });
+      }
+    });
     
-      // ✅ 리스너 등록 끝난 다음 init 호출
-      window.netlifyIdentity.init();
+    window.netlifyIdentity.on("logout", () => hideAdminUI());
+    
+    // ✅ 3) 마지막에 init()
+    window.netlifyIdentity.init();
     });
   </script>
 </body>
