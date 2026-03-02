@@ -897,42 +897,55 @@
         generate();
       }
     
-   // (C) Identity 초기화 + 운영진 게이트 + 초대 처리
-    if (!window.netlifyIdentity) return;
-    
-    const inviteToken = getInviteToken();
-    
-    // inviteToken이 있는데 hash가 비어있으면 넣어주기만 함
-    if (inviteToken && !location.hash.includes("invite_token=")) {
-      location.hash = "invite_token=" + encodeURIComponent(inviteToken);
-      console.log("[Reinject hash]", location.hash);
-    }
-    
-    // 디버깅 로그 (원인 파악용)
-    window.netlifyIdentity.on("open", () => console.log("[Identity open]"));
-    window.netlifyIdentity.on("close", () => console.log("[Identity close]"));
-    window.netlifyIdentity.on("error", (e) => console.log("[Identity error]", e));
-    
-    window.netlifyIdentity.on("init", (user) => {
-      console.log("[Identity init] user=", user);
-    
-      // ✅ 여기서 open("signup") 하지 말 것! (겹쳐서 닫히는 원인)
-      if (isAdminUser(user)) showAdminUI();
-      else hideAdminUI();
-    });
-    
-    window.netlifyIdentity.on("login", (user) => {
-      if (isAdminUser(user)) showAdminUI();
-      else {
-        alert("운영진 권한이 없습니다.");
-        window.netlifyIdentity.logout();
-        hideAdminUI();
+      // (C) Identity 초기화 + 운영진 게이트 + 초대 처리
+      if (!window.netlifyIdentity) {
+        console.log("[chk] netlifyIdentity missing");
+        return;
       }
-    });
-    
-    window.netlifyIdentity.on("logout", () => hideAdminUI());
-    
-    window.netlifyIdentity.init();
+      
+      const inviteToken = getInviteToken();
+      console.log("[chk] inviteToken =", inviteToken);
+      
+      // 토큰 있는데 hash가 비면 재주입
+      if (inviteToken && !location.hash.includes("invite_token=")) {
+        location.hash = "invite_token=" + encodeURIComponent(inviteToken);
+        console.log("[Reinject hash]", location.hash);
+      }
+      
+      // 디버깅 로그
+      window.netlifyIdentity.on("open", () => console.log("[Identity open]"));
+      window.netlifyIdentity.on("close", () => console.log("[Identity close]"));
+      window.netlifyIdentity.on("error", (e) => console.log("[Identity error]", e));
+      
+      let openedOnce = false;
+      
+      window.netlifyIdentity.on("init", (user) => {
+        console.log("[Identity init] user=", user);
+      
+        // ✅ 초대토큰 있으면 "딱 1번만" signup 열기
+        if (inviteToken && !user && !openedOnce) {
+          openedOnce = true;
+          // init 직후 한 틱 늦게 열기 (깜빡임 방지)
+          setTimeout(() => window.netlifyIdentity.open("signup"), 50);
+        }
+      
+        if (isAdminUser(user)) showAdminUI();
+        else hideAdminUI();
+      });
+      
+      window.netlifyIdentity.on("login", (user) => {
+        console.log("[Identity login]", user && user.email);
+        if (isAdminUser(user)) showAdminUI();
+        else {
+          alert("운영진 권한이 없습니다.");
+          window.netlifyIdentity.logout();
+          hideAdminUI();
+        }
+      });
+      
+      window.netlifyIdentity.on("logout", () => hideAdminUI());
+      
+      window.netlifyIdentity.init();
     });
   </script>
 </body>
