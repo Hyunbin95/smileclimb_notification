@@ -333,6 +333,16 @@
       ✅ 적용(커밋)
     </button>
   </div>
+  <script>
+    // ✅ Identity가 URL hash를 정리하기 전에 invite_token을 먼저 저장
+    (function captureInviteTokenEarly() {
+      const raw = window.location.hash || "";
+      const m = raw.match(/invite_token=([^&]+)/);
+      window.__INVITE_TOKEN = m ? decodeURIComponent(m[1]) : null;
+      console.log("[EarlyCapture] hash =", raw, " savedInviteToken =", window.__INVITE_TOKEN);
+    })();
+  </script>
+  
 
   <!-- 공지 모드 복귀 -->
   <div class="notice-exit" style="display:none;">
@@ -859,17 +869,15 @@
      * 6) 초대 링크(invite_token) 처리
      ***********************/
     function getInviteToken() {
-      // 1) ?invite_token=...
+      if (window.__INVITE_TOKEN) return window.__INVITE_TOKEN;
+    
       const sp = new URLSearchParams(window.location.search);
-      if (sp.has("invite_token")) return sp.get("invite_token");
-
-      // 2) #invite_token=... or #...invite_token=...
-      const hash = window.location.hash || "";
-      const idx = hash.indexOf("invite_token=");
-      if (idx >= 0) {
-        return hash.slice(idx).split("invite_token=")[1]?.split("&")[0] || null;
-      }
-      return null;
+      const q = sp.get("invite_token");
+      if (q) return q;
+    
+      const hash = (window.location.hash || "").replace(/^#/, "");
+      const m = hash.match(/invite_token=([^&]+)/);
+      return m ? decodeURIComponent(m[1]) : null;
     }
 
     /***********************
