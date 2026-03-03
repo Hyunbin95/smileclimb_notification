@@ -884,6 +884,12 @@
       const m = hash.match(/invite_token=([^&]+)/);
       return m ? decodeURIComponent(m[1]) : null;
     }
+  
+    function getRecoveryToken() {
+      const hash = (window.location.hash || "");
+      const m = hash.match(/recovery_token=([^&]+)/);
+      return m ? decodeURIComponent(m[1]) : null;
+    }
 
     /***********************
      * 7) 초기 로드: config.json -> 폼/렌더
@@ -895,7 +901,7 @@
       // 1) ✅ Identity 먼저!
       if (window.netlifyIdentity) {
         const inviteToken = getInviteToken(); // 기존 함수 그대로 OK (하지만 reinject는 절대 X)
-        const recoveryToken = window.__RECOVERY_TOKEN || null;
+        const recoveryToken = getRecoveryToken();
     
         let openedOnce = false;
     
