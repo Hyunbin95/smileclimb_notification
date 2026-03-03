@@ -323,7 +323,7 @@
 
   <!-- ✅ 운영진 전용 관리자 바 -->
   <div id="adminBar" style="display:none; max-width:680px; margin:0 auto 10px; gap:8px; justify-content:flex-end;">
-    <button onclick="openIdentity()" style="background:#222;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;">
+    <button onclick="openIdentity(event)" style="background:#222;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;">
       🔐 운영진 로그인/계정
     </button>
     <button id="btnPreview" onclick="adminPreview()" style="display:none;background:#7BC67E;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">
@@ -333,16 +333,20 @@
       ✅ 적용(커밋)
     </button>
   </div>
+
   <script>
-    // ✅ Identity가 URL hash를 정리하기 전에 invite_token을 먼저 저장
-    (function captureInviteTokenEarly() {
+    // ✅ Identity가 URL hash를 정리하기 전에 invite_token / recovery_token을 먼저 저장
+    (function captureAuthTokensEarly() {
       const raw = window.location.hash || "";
-      const m = raw.match(/invite_token=([^&]+)/);
-      window.__INVITE_TOKEN = m ? decodeURIComponent(m[1]) : null;
-      console.log("[EarlyCapture] hash =", raw, " savedInviteToken =", window.__INVITE_TOKEN);
+      const get = (key) => {
+        const m = raw.match(new RegExp(key + "=([^&]+)"));
+        return m ? decodeURIComponent(m[1]) : null;
+      };
+      window.__INVITE_TOKEN = get("invite_token");
+      window.__RECOVERY_TOKEN = get("recovery_token");
+      console.log("[EarlyCapture] hash =", raw, { invite: window.__INVITE_TOKEN, recovery: window.__RECOVERY_TOKEN });
     })();
   </script>
-  
 
   <!-- 공지 모드 복귀 -->
   <div class="notice-exit" style="display:none;">
@@ -493,7 +497,6 @@
     /***********************
      * 0) 운영진 설정
      ***********************/
-    // ✅ 운영진 이메일 화이트리스트 (운영진 이메일 받으면 여기에 추가)
     const ADMIN_EMAILS = [
       "dlgusqls44@gmail.com",
       "wjd2903@gmail.com",
@@ -501,16 +504,11 @@
       "john941003@naver.com",
       "dusehd1541@gmail.com",
       "lepleeka137@gmail.com",
-      // "admin2@example.com",
     ];
-
-    function openIdentity() {
-      if (window.netlifyIdentity) window.netlifyIdentity.open();
-    }
 
     function isAdminUser(user) {
       if (!user || !user.email) return false;
-      if (ADMIN_EMAILS.length === 0) return true; // (원하면 전체 운영진 허용)
+      if (ADMIN_EMAILS.length === 0) return true;
       return ADMIN_EMAILS.includes(user.email);
     }
 
@@ -518,7 +516,6 @@
       const bar = document.getElementById("adminBar");
       if (bar) bar.style.display = "flex";
 
-      // 설정 패널/상단 버튼 활성화
       const settingsWrap = document.querySelector(".settings-wrap");
       const noticeExit = document.querySelector(".notice-exit");
       const topActions = document.querySelector(".top-actions");
@@ -527,30 +524,35 @@
       if (noticeExit) noticeExit.style.display = "block";
       if (topActions) topActions.style.display = "flex";
 
-      // 관리자 버튼 활성화
       const btnPreview = document.getElementById("btnPreview");
       const btnApply = document.getElementById("btnApply");
       if (btnPreview) btnPreview.style.display = "inline-block";
       if (btnApply) btnApply.style.display = "inline-block";
 
-      // 운영진은 기본적으로 설정 보이게(캡처모드 해제)
       document.body.classList.remove('notice-mode');
     }
 
     function hideAdminUI() {
       const bar = document.getElementById("adminBar");
       if (bar) bar.style.display = "none";
-      // 일반 유저는 캡처 모드로 유지(원하면)
       document.body.classList.add('notice-mode');
     }
 
-    function getIdentityToken() {
+    // ✅ click-through 방지 + 다음 틱에 open
+    function openIdentity(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      setTimeout(() => window.netlifyIdentity && window.netlifyIdentity.open("login"), 0);
+    }
+
+    // ✅ 만료 자동갱신 토큰
+    async function getIdentityTokenFresh() {
       const u = window.netlifyIdentity && window.netlifyIdentity.currentUser();
-      return u && u.token ? u.token.access_token : null;
+      if (!u) return null;
+      return await u.jwt(true);
     }
 
     /***********************
-     * 1) UI 동작들(기존)
+     * 1) UI 동작들
      ***********************/
     function toggleSettings() {
       const panel = document.getElementById('settingsPanel');
@@ -582,7 +584,9 @@
 
     function enterNoticeMode() {
       document.body.classList.add('notice-mode');
-      window.scrollTo({ top: document.getElementById('calendarCard').offsetTop - 20, behavior: 'smooth' });
+      // ✅ 첫 진입에서 smooth scroll이 클릭/포커스 흐름을 꼬이게 만들 수 있어(특히 모바일)
+      // 아래는 "즉시"로 바꿔 안정성 우선
+      window.scrollTo({ top: document.getElementById('calendarCard').offsetTop - 20, behavior: 'auto' });
     }
     function exitNoticeMode() { document.body.classList.remove('notice-mode'); }
 
@@ -656,7 +660,6 @@
       const weekdayTime  = (weekday.time ?? '').toString().trim();
       const weekdayPlace = (weekday.place ?? '').toString().trim();
 
-      // specials: { day: [{label, place}] }
       const specials = {};
       const specialList = Array.isArray(cfg.specials) ? cfg.specials : [];
       specialList.forEach(item => {
@@ -788,7 +791,7 @@
     }
 
     /***********************
-     * 4) 폼 -> config 생성 (운영진 미리보기/적용용)
+     * 4) 폼 -> config 생성
      ***********************/
     function buildConfigFromForm() {
       const cfg = {
@@ -809,7 +812,6 @@
         specials: []
       };
 
-      // specials 폼 수집(같은 날짜 여러개 가능)
       const specialsMap = {};
       document.querySelectorAll('.special-row').forEach(row => {
         const inputs = row.querySelectorAll('input');
@@ -826,7 +828,6 @@
       return cfg;
     }
 
-    // 설정패널의 "달력 생성하기" 버튼은 미리보기로 유지
     function generate() {
       const cfg = buildConfigFromForm();
       generateFromConfig(cfg);
@@ -842,7 +843,7 @@
 
     async function adminApply() {
       try {
-        const token = getIdentityToken();
+        const token = await getIdentityTokenFresh();
         if (!token) throw new Error("운영진 로그인 후에 적용할 수 있어요.");
 
         const config = buildConfigFromForm();
@@ -871,81 +872,93 @@
     }
 
     /***********************
-     * 6) 초대 링크(invite_token) 처리
+     * 6) 토큰 파서
      ***********************/
     function getInviteToken() {
       if (window.__INVITE_TOKEN) return window.__INVITE_TOKEN;
-    
+
       const sp = new URLSearchParams(window.location.search);
       const q = sp.get("invite_token");
       if (q) return q;
-    
+
       const hash = (window.location.hash || "").replace(/^#/, "");
       const m = hash.match(/invite_token=([^&]+)/);
       return m ? decodeURIComponent(m[1]) : null;
     }
-  
+
     function getRecoveryToken() {
-      const hash = (window.location.hash || "");
+      if (window.__RECOVERY_TOKEN) return window.__RECOVERY_TOKEN;
+
+      const sp = new URLSearchParams(window.location.search);
+      const q = sp.get("recovery_token");
+      if (q) return q;
+
+      const hash = (window.location.hash || "").replace(/^#/, "");
       const m = hash.match(/recovery_token=([^&]+)/);
       return m ? decodeURIComponent(m[1]) : null;
     }
 
     /***********************
-     * 7) 초기 로드: config.json -> 폼/렌더
+     * 7) Identity 초기화: ✅ DOMContentLoaded에서 먼저
      ***********************/
-      window.addEventListener("load", async () => {
-      // 0) 기본 UI
+    document.addEventListener("DOMContentLoaded", () => {
+      // 기본은 일반 유저 모드
       enterNoticeMode();
-    
-      // 1) ✅ Identity 먼저!
-      if (window.netlifyIdentity) {
-        const inviteToken = getInviteToken(); // 기존 함수 그대로 OK (하지만 reinject는 절대 X)
-        const recoveryToken = getRecoveryToken();
-    
-        let openedOnce = false;
-    
-        window.netlifyIdentity.on("init", (user) => {
-          console.log("[Identity init] user=", user);
-    
-          // ✅ recovery가 우선
-          if (recoveryToken && !user && !openedOnce) {
-            openedOnce = true;
-            setTimeout(() => window.netlifyIdentity.open("recovery"), 0);
-          }
-          // ✅ invite는 그 다음
-          else if (inviteToken && !user && !openedOnce) {
-            openedOnce = true;
-            setTimeout(() => window.netlifyIdentity.open("signup"), 0);
-          }
-    
-          if (isAdminUser(user)) showAdminUI();
-          else hideAdminUI();
-        });
-    
-        window.netlifyIdentity.on("login", (user) => {
-          console.log("[Identity login]", user && user.email);
-    
-          // ✅ 토큰 정리는 "로그인 완료 후"에만 (그리고 hash 재주입 금지)
-          history.replaceState(null, "", location.pathname + location.search);
-    
-          if (isAdminUser(user)) showAdminUI();
-          else {
-            alert("운영진 권한이 없습니다.");
-            window.netlifyIdentity.logout();
-            hideAdminUI();
-          }
-        });
-    
-        window.netlifyIdentity.on("logout", () => hideAdminUI());
-        window.netlifyIdentity.on("open", () => console.log("[Identity open]"));
-        window.netlifyIdentity.on("close", () => console.log("[Identity close]"));
-        window.netlifyIdentity.on("error", (e) => console.log("[Identity error]", e));
-    
-        window.netlifyIdentity.init();
-      }
-    
-      // 2) 그 다음에 config.json 로드/렌더
+
+      if (!window.netlifyIdentity) return;
+
+      const inviteToken = getInviteToken();
+      const recoveryToken = getRecoveryToken();
+      let openedOnce = false;
+
+      window.netlifyIdentity.on("open", () => console.log("[Identity open]"));
+      window.netlifyIdentity.on("close", () => console.log("[Identity close]"));
+      window.netlifyIdentity.on("error", (e) => console.log("[Identity error]", e));
+
+      window.netlifyIdentity.on("init", (user) => {
+        console.log("[Identity init] user=", user);
+
+        // ✅ recovery 우선
+        if (recoveryToken && !user && !openedOnce) {
+          openedOnce = true;
+          setTimeout(() => window.netlifyIdentity.open("recovery"), 0);
+          return;
+        }
+
+        // ✅ invite 다음
+        if (inviteToken && !user && !openedOnce) {
+          openedOnce = true;
+          setTimeout(() => window.netlifyIdentity.open("signup"), 0);
+          return;
+        }
+
+        if (isAdminUser(user)) showAdminUI();
+        else hideAdminUI();
+      });
+
+      window.netlifyIdentity.on("login", (user) => {
+        console.log("[Identity login]", user && user.email);
+
+        // 토큰 정리는 로그인 완료 후에만
+        history.replaceState(null, "", location.pathname + location.search);
+
+        if (isAdminUser(user)) showAdminUI();
+        else {
+          alert("운영진 권한이 없습니다.");
+          window.netlifyIdentity.logout();
+          hideAdminUI();
+        }
+      });
+
+      window.netlifyIdentity.on("logout", () => hideAdminUI());
+
+      window.netlifyIdentity.init();
+    });
+
+    /***********************
+     * 8) config.json 로드/렌더: load에서 나중에
+     ***********************/
+    window.addEventListener("load", async () => {
       try {
         const cfg = await loadConfig();
         applyConfigToForm(cfg);
