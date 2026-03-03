@@ -902,14 +902,18 @@
      * 7) Identity 초기화: ✅ DOMContentLoaded에서 먼저
      ***********************/
     document.addEventListener("DOMContentLoaded", () => {
-      // 기본은 일반 유저 모드
-      enterNoticeMode();
 
       if (!window.netlifyIdentity) return;
 
       const inviteToken = getInviteToken();
       const recoveryToken = getRecoveryToken();
       let openedOnce = false;
+
+      const recoveryToken = getRecoveryToken();
+
+      if (!recoveryToken) {
+        enterNoticeMode();
+      }
 
       window.netlifyIdentity.on("open", () => console.log("[Identity open]"));
       window.netlifyIdentity.on("close", () => console.log("[Identity close]"));
@@ -919,7 +923,7 @@
         console.log("[Identity init] user=", user);
 
         // ✅ recovery 우선
-        if (recoveryToken && !user && !openedOnce) {
+        if (recoveryToken && !openedOnce) {
           openedOnce = true;
           setTimeout(() => window.netlifyIdentity.open("recovery"), 0);
           return;
