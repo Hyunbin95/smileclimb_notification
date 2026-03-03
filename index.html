@@ -494,6 +494,12 @@
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
   <script>
+    window.addEventListener("error", (e) => {
+      console.log("[window error]", e.message, e.filename, e.lineno, e.colno);
+    });
+    window.addEventListener("unhandledrejection", (e) => {
+      console.log("[promise rejection]", e.reason);
+    });
     /***********************
      * 0) 운영진 설정
      ***********************/
