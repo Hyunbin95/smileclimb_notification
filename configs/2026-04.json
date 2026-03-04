@@ -3,7 +3,25 @@
   "month": 4,
   "contact": "카카오톡 오픈채팅",
   "hashtag": "#싱글벙클",
-  "weekend": { "dates": [], "time": "", "place": "" },
-  "weekday": { "dates": [], "time": "", "place": "" },
+  "weekend": {
+    "dates": [
+      4,
+      11,
+      18,
+      25
+    ],
+    "time": "",
+    "place": ""
+  },
+  "weekday": {
+    "dates": [
+      8,
+      14,
+      22,
+      28
+    ],
+    "time": "",
+    "place": ""
+  },
   "specials": []
 }
