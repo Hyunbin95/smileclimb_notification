@@ -47,7 +47,7 @@ export async function initAdmin() {
   bindSpecialListEvents();
 
   // identity
-  initIdentity();
+  await initIdentity();
   document.getElementById("btnLogin")?.addEventListener("click", openLogin);
   document.getElementById("btnLogout")?.addEventListener("click", logout);
 
