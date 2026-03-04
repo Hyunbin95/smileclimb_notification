@@ -1,14 +1,18 @@
 // netlify/functions/update-config.js
 export async function handler(event, context) {
   try {
-    // 1) Identity 인증 확인 (Authorization: Bearer <token>로 오면 context.user가 잡힘)
+    // 1) Identity 인증 확인
     const user = context.clientContext && context.clientContext.user;
     if (!user) {
       return { statusCode: 401, body: "Unauthorized (login required)" };
     }
 
     // (선택) 이메일 화이트리스트
-    const allowed = (process.env.ALLOWED_EMAILS || "").split(",").map(s => s.trim()).filter(Boolean);
+    const allowed = (process.env.ALLOWED_EMAILS || "")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
+
     const email = user.email;
     if (allowed.length > 0 && !allowed.includes(email)) {
       return { statusCode: 403, body: "Forbidden (not allowed)" };
@@ -21,10 +25,24 @@ export async function handler(event, context) {
 
     const body = JSON.parse(event.body || "{}");
     const newConfig = body.config;
-    const commitMessage = body.message || `Update config.json by ${email}`;
+    const ym = (body.ym || "").toString().trim(); // ✅ 추가: "2026-03" 형태
+    const commitMessage = body.message || `Update schedule by ${email}`;
 
     if (!newConfig || typeof newConfig !== "object") {
       return { statusCode: 400, body: "Bad Request: config must be an object" };
+    }
+
+    // ✅ ym 검증 (YYYY-MM)
+    if (!/^\d{4}-\d{2}$/.test(ym)) {
+      return { statusCode: 400, body: "Bad Request: ym must be YYYY-MM (e.g., 2026-03)" };
+    }
+
+    // ✅ config의 year/month도 같이 맞는지 최소 검증(안전장치)
+    const cy = parseInt(newConfig.year);
+    const cm = parseInt(newConfig.month);
+    const expectedYm = `${cy}-${String(cm).padStart(2, "0")}`;
+    if (!Number.isFinite(cy) || !Number.isFinite(cm) || expectedYm !== ym) {
+      return { statusCode: 400, body: `Bad Request: config.year/month must match ym (${ym})` };
     }
 
     // 3) GitHub 커밋 준비
@@ -34,12 +52,18 @@ export async function handler(event, context) {
       return { statusCode: 500, body: "Server misconfigured: missing GITHUB_TOKEN or GITHUB_REPO" };
     }
 
-    const owner = repo.split("/")[0];
-    const repoName = repo.split("/")[1];
-    const path = "config.json";
+    const [owner, repoName] = repo.split("/");
+    if (!owner || !repoName) {
+      return { statusCode: 500, body: "Server misconfigured: invalid GITHUB_REPO (expected owner/repo)" };
+    }
+
+    // ✅ 월별 파일 경로
+    const path = `configs/${ym}.json`;
     const apiBase = "https://api.github.com";
 
-    // 4) 현재 파일 sha 조회 (업데이트하려면 필요)
+    // 4) 현재 파일 sha 조회 (없으면 새로 생성)
+    let sha = null;
+
     const getRes = await fetch(`${apiBase}/repos/${owner}/${repoName}/contents/${path}`, {
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -48,19 +72,28 @@ export async function handler(event, context) {
       }
     });
 
-    if (!getRes.ok) {
-      const txt = await getRes.text();
-      return { statusCode: 500, body: `Failed to read config.json: ${getRes.status} ${txt}` };
+    if (getRes.ok) {
+      const current = await getRes.json();
+      sha = current.sha;
+    } else {
+      // ✅ 404면 새 파일 생성 (sha 없이 PUT 가능)
+      if (getRes.status !== 404) {
+        const txt = await getRes.text();
+        return { statusCode: 500, body: `Failed to read ${path}: ${getRes.status} ${txt}` };
+      }
     }
-
-    const current = await getRes.json();
-    const sha = current.sha;
 
     // 5) 새 내용 인코딩 (pretty JSON)
     const contentStr = JSON.stringify(newConfig, null, 2) + "\n";
     const contentB64 = Buffer.from(contentStr, "utf8").toString("base64");
 
-    // 6) PUT으로 업데이트 커밋
+    // 6) PUT으로 업데이트/생성 커밋
+    const putBody = {
+      message: commitMessage,
+      content: contentB64
+    };
+    if (sha) putBody.sha = sha;
+
     const putRes = await fetch(`${apiBase}/repos/${owner}/${repoName}/contents/${path}`, {
       method: "PUT",
       headers: {
@@ -69,16 +102,12 @@ export async function handler(event, context) {
         "Content-Type": "application/json",
         "User-Agent": "smileclimb-netlify-function"
       },
-      body: JSON.stringify({
-        message: commitMessage,
-        content: contentB64,
-        sha
-      })
+      body: JSON.stringify(putBody)
     });
 
     const putTxt = await putRes.text();
     if (!putRes.ok) {
-      return { statusCode: 500, body: `Failed to update config.json: ${putRes.status} ${putTxt}` };
+      return { statusCode: 500, body: `Failed to update ${path}: ${putRes.status} ${putTxt}` };
     }
 
     return { statusCode: 200, body: putTxt };
