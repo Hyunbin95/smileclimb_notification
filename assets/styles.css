@@ -1,0 +1,340 @@
+
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f0ece6;
+      padding: 24px 16px 60px;
+      min-height: 100vh;
+    }
+
+    /* ════════════════════════════════
+       설정 패널
+    ════════════════════════════════ */
+    .settings-wrap {
+      max-width: 680px;
+      margin: 0 auto 20px;
+    }
+    .settings-toggle {
+      width: 100%;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 13px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      letter-spacing: 0.3px;
+    }
+    .settings-toggle .arrow { transition: transform .25s; font-size: 16px; }
+    .settings-toggle.open .arrow { transform: rotate(180deg); }
+
+    .settings-panel {
+      background: #fff;
+      border-radius: 0 0 16px 16px;
+      padding: 20px 22px 22px;
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.08);
+    }
+    .settings-panel.open { display: flex; }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; }
+    .form-group label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #555;
+      letter-spacing: 0.3px;
+    }
+    .form-group input, .form-group select {
+      border: 1.5px solid #ddd;
+      border-radius: 9px;
+      padding: 8px 11px;
+      font-size: 13px;
+      font-family: 'Noto Sans KR', sans-serif;
+      color: #222;
+      outline: none;
+      transition: border-color .2s;
+      background: #fafafa;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: #7BC67E; background: #fff; }
+
+    .section-divider {
+      font-size: 12px;
+      font-weight: 700;
+      color: #888;
+      border-bottom: 1.5px solid #f0ece6;
+      padding-bottom: 6px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .section-divider span { margin-right: 6px; }
+
+    /* 특별 일정 행 */
+    .special-list { display: flex; flex-direction: column; gap: 8px; }
+    .special-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .special-row input { flex: 1; }
+    .special-row input.date-input { max-width: 80px; }
+    .btn-remove {
+      background: #ffe0e0;
+      color: #e25555;
+      border: none;
+      border-radius: 8px;
+      width: 30px; height: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .btn-add {
+      background: #edf7ee;
+      color: #4caf50;
+      border: none;
+      border-radius: 9px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    .btn-generate {
+      background: linear-gradient(135deg, #7BC67E, #4caf50);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      box-shadow: 0 3px 12px rgba(123,198,126,.4);
+    }
+
+    /* 공지 모드 버튼 */
+    .top-actions {
+      max-width: 680px;
+      margin: 0 auto 12px;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .btn-notice-mode {
+      background: #F4A261;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+    }
+    .btn-notice-mode:hover { background: #e8904a; }
+
+    /* 공지 모드일 때 설정 숨김 */
+    body.notice-mode .settings-wrap,
+    body.notice-mode .top-actions { display: none; }
+
+    /* ════════════════════════════════
+       달력 카드
+    ════════════════════════════════ */
+    .card {
+      background: #fff;
+      border-radius: 28px;
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+      box-shadow: 0 8px 40px rgba(0,0,0,.12);
+      overflow: hidden;
+    }
+
+    /* ✅ 스크롤 제거 유지 */
+    .calendar-scroll { overflow-x: hidden; padding-bottom: 0; }
+    .calendar-wide { min-width: 0; }
+
+    /* Header */
+    .header {
+      position: relative;
+      background: #1a1a1a;
+      padding: 26px 30px 20px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .header img {
+      width: 84px; height: 84px;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+    }
+    .header-text .month-label { font-size: 12px; font-weight: 600; color: #999; letter-spacing: 3px; }
+    .header-text h1 { font-size: 30px; font-weight: 900; color: #fff; line-height: 1.15; }
+    .header-text h1 span { color: #7BC67E; }
+    .header-text .subtitle { margin-top: 3px; font-size: 12px; color: #bbb; }
+
+    /* Legend */
+    .legend {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      padding: 12px 28px;
+      background: #f9f6f2;
+      border-bottom: 1px solid #eee;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: #444; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Calendar */
+    .calendar-section { padding: 14px 14px 14px; }
+    .day-headers { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; margin-bottom: 6px; }
+    .day-headers div { font-size: 12px; font-weight: 700; padding: 4px 0; color: #888; }
+    .day-headers .sun { color: #e25555; }
+    .day-headers .sat { color: #4a90d9; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+
+    .cell {
+      border-radius: 11px;
+      padding: 5px 4px 6px;
+      min-height: 62px;
+      display: flex; flex-direction: column; align-items: center;
+      background: #fafafa;
+      border: 1.5px solid #f0ece7;
+    }
+    .cell.empty { background: transparent; border-color: transparent; }
+    .cell.today { border-color: #F4A261; background: #fff8f2; }
+
+    .date-num { font-size: 13px; font-weight: 700; color: #222; margin-bottom: 3px; line-height: 1; }
+    .cell.sun .date-num { color: #e25555; }
+    .cell.sat .date-num { color: #4a90d9; }
+
+    .badge {
+      font-size: 10px; font-weight: 700;
+      border-radius: 12px;
+      padding: 2px 6px;
+      margin-top: 3px;
+      text-align: center;
+      max-width: 100%;
+      white-space: normal;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      line-height: 1.15;
+    }
+
+    .badge.weekend{
+      width: 90%;
+      height: 7px;
+      padding: 0;
+      border-radius: 6px;
+      font-size: 0;
+      margin-top: 4px;
+    }
+    .badge.weekday {
+      width: 90%;
+      height: 7px;
+      padding: 0;
+      border-radius: 6px;
+      font-size: 0;
+      margin-top: 4px;
+    }
+
+    .badge.weekend { background: #7BC67E; color: #fff; }
+    .badge.weekday { background: #F4A261; color: #fff; }
+    .badge.special { background: #3a3d3b; color: #fff; }
+
+    /* Info Cards */
+    .info-section { padding: 0 20px 24px; display: flex; flex-direction: column; gap: 10px; }
+    .info-card {
+      border-radius: 14px; padding: 13px 16px;
+      display: flex; align-items: flex-start; gap: 11px;
+    }
+    .info-card.green  { background: #edf7ee; border-left: 4px solid #7BC67E; }
+    .info-card.orange { background: #fff5ec; border-left: 4px solid #F4A261; }
+    .info-card.purple { background: #fdf0f8; border-left: 4px solid #7BC67E; }
+    .info-card.blue   { background: #eef4ff; border-left: 4px solid #6699ee; }
+    .info-card .icon { font-size: 20px; line-height: 1; }
+    .info-card .body strong { font-size: 12.5px; font-weight: 700; color: #222; display: block; margin-bottom: 2px; }
+    .info-card .body span   { font-size: 11.5px; color: #666; line-height: 1.6; display: block; }
+
+    /* Footer */
+    .footer { background: #1a1a1a; padding: 14px 28px; text-align: center; color: #777; font-size: 11.5px; }
+    .footer strong { color: #aaa; }
+
+    /* 공지 모드 복귀 버튼 (달력 위) */
+    .notice-exit {
+      display: none;
+      max-width: 680px;
+      margin: 0 auto 14px;
+      text-align: right;
+    }
+    body.notice-mode .notice-exit { display: block; }
+    .notice-exit button {
+      background: #555; color: #fff; border: none; border-radius: 9px;
+      padding: 8px 16px; font-size: 12px; font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif; cursor: pointer;
+    }
+
+    @media (max-width: 520px) {
+      body { padding: 18px 10px 50px; }
+      .header { padding: 20px 18px 16px; gap: 12px; }
+      .header img { width: 64px; height: 64px; }
+      .header-text h1 { font-size: 24px; }
+      .legend { padding: 10px 16px; gap: 10px; }
+
+      .calendar-section { padding: 12px 10px 12px; }
+      .day-headers div { font-size: 11px; padding: 3px 0; }
+      .calendar-grid { gap: 3px; }
+
+      .cell { min-height: 56px; padding: 4px 2px 5px; border-radius: 10px; }
+      .date-num { font-size: 12px; margin-bottom: 2px; }
+
+      .badge { font-size: 8px; padding: 2px 4px; margin-top: 2px; }
+
+      .info-section { padding: 0 12px 18px; }
+      .footer { padding: 12px 14px; font-size: 11px; }
+    }
+
+    @media print { .settings-wrap, .top-actions, .notice-exit { display: none !important; } }
+
+
+/* month nav */
+.month-nav {
+  max-width: 680px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.month-nav button {
+  background: #222;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 12px;
+}
+.month-label {
+  font-weight: 900;
+  color: #222;
+  letter-spacing: 1px;
+}

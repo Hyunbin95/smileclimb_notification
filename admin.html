@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smile Climbing – Admin</title>
+
+  <link rel="stylesheet" href="./assets/styles.css"/>
+
+  <!-- favicon / PWA -->
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#111111">
+</head>
+<body>
+
+  <!-- 로그인/커밋 바 -->
+  <div style="max-width:680px; margin:0 auto 10px; display:flex; gap:8px; justify-content:flex-end; align-items:center;">
+    <span id="adminEmail" style="font-size:12px;color:#555;font-weight:800;"></span>
+    <button id="btnLogin" style="background:#222;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;">
+      🔐 로그인
+    </button>
+    <button id="btnLogout" style="background:#555;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;">
+      로그아웃
+    </button>
+    <button id="btnPreview" style="background:#7BC67E;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">
+      👀 미리보기
+    </button>
+    <button id="btnApply" style="background:#F4A261;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">
+      ✅ 적용(커밋)
+    </button>
+  </div>
+
+  <!-- 월 이동 -->
+  <div class="month-nav">
+    <button id="btnPrev">◀ 이전달</button>
+    <div id="monthLabel" class="month-label"></div>
+    <button id="btnNext">다음달 ▶</button>
+  </div>
+
+  <!-- 공지 모드 버튼들 (운영진 페이지에서도 캡처용으로 쓸 수 있게) -->
+  <div class="notice-exit" style="display:block;">
+    <button id="btnExitNotice">⚙️ 설정으로 돌아가기</button>
+  </div>
+  <div class="top-actions" style="display:flex;">
+    <button class="btn-notice-mode" id="btnEnterNotice">📢 공지 캡처 모드</button>
+  </div>
+
+  <!-- ── 설정 패널 (네 기존 그대로) ── -->
+  <div class="settings-wrap" style="display:block;">
+    <button class="settings-toggle open" id="toggleBtn" type="button">
+      <span>⚙️ 정모 일정 설정하기</span>
+      <span class="arrow">▲</span>
+    </button>
+    <div class="settings-panel open" id="settingsPanel">
+
+      <div class="section-divider"><span>📅</span>달력 연월</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>연도</label>
+          <input type="number" id="inp-year" value="2026" min="2020" max="2040"/>
+        </div>
+        <div class="form-group">
+          <label>월</label>
+          <select id="inp-month">
+            <option value="1">1월</option><option value="2">2월</option>
+            <option value="3">3월</option><option value="4">4월</option>
+            <option value="5">5월</option><option value="6">6월</option>
+            <option value="7">7월</option><option value="8">8월</option>
+            <option value="9">9월</option><option value="10">10월</option>
+            <option value="11">11월</option><option value="12">12월</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-divider"><span>🟢</span>주말 정모</div>
+      <div class="form-row">
+        <div class="form-group" style="min-width:200px">
+          <label>날짜 (쉼표로 구분 예: 1, 8, 15, 22)</label>
+          <input type="text" id="inp-weekend-dates" placeholder="예: 1, 8, 15, 22"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>집합 시간</label>
+          <input type="text" id="inp-weekend-time" placeholder="예: 오전 10:00"/>
+        </div>
+        <div class="form-group">
+          <label>장소</label>
+          <input type="text" id="inp-weekend-place" placeholder="예: 더클라임 강남점"/>
+        </div>
+      </div>
+
+      <div class="section-divider"><span>🟠</span>평일 정모</div>
+      <div class="form-row">
+        <div class="form-group" style="min-width:200px">
+          <label>날짜 (쉼표로 구분 예: 4, 11, 18, 25)</label>
+          <input type="text" id="inp-weekday-dates" placeholder="예: 4, 11, 18, 25"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>집합 시간</label>
+          <input type="text" id="inp-weekday-time" placeholder="예: 저녁 7:30"/>
+        </div>
+        <div class="form-group">
+          <label>장소</label>
+          <input type="text" id="inp-weekday-place" placeholder="예: 더클라임 신림점"/>
+        </div>
+      </div>
+
+      <div class="section-divider"><span>⭐</span>정모생성</div>
+      <div class="special-list" id="specialList"></div>
+      <button class="btn-add" id="btnAddSpecial" type="button">+ 특별 일정 추가</button>
+
+      <div class="section-divider"><span>💬</span>공지 하단 문구</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>연락처 / 채널</label>
+          <input type="text" id="inp-contact" placeholder="예: 카카오톡 오픈채팅" value="카카오톡 오픈채팅"/>
+        </div>
+        <div class="form-group">
+          <label>해시태그</label>
+          <input type="text" id="inp-hashtag" placeholder="예: #싱글벙클" value="#싱글벙클"/>
+        </div>
+      </div>
+
+      <button class="btn-generate" id="btnGenerate" type="button">🗓️ 달력 생성하기</button>
+    </div>
+  </div>
+
+  <!-- ── 달력 카드 (네 기존 그대로) ── -->
+  <div class="card" id="calendarCard">
+    <div class="header">
+      <img src="https://www.genspark.ai/api/files/s/mjL4aDIJ" alt="Smile Climbing Logo" onerror="this.style.display='none'"/>
+      <div class="header-text">
+        <div class="month-label" id="hdr-label">2026 Schedule</div>
+        <h1 id="hdr-title">3월 <span>정모 일정</span></h1>
+        <div class="subtitle">Smile Climbing Crew 🧗</div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="dot" style="background:#0d1a0e"></div> 정모</div>
+      <div class="legend-item"><div class="dot" style="background:#F4A261"></div> 평일정모</div>
+      <div class="legend-item"><div class="dot" style="background:#7BC67E"></div> 주말정모</div>
+    </div>
+
+    <div class="calendar-section">
+      <div class="calendar-scroll">
+        <div class="calendar-wide">
+          <div class="day-headers">
+            <div class="sun">일</div><div>월</div><div>화</div><div>수</div>
+            <div>목</div><div>금</div><div class="sat">토</div>
+          </div>
+          <div class="calendar-grid" id="calGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-section" id="infoSection"></div>
+
+    <div class="footer" id="footerSection">
+      <strong>SMILE CLIMBING CREW</strong> &nbsp;|&nbsp; 문의: 카카오톡 오픈채팅 &nbsp;|&nbsp; #스마일클라이밍
+    </div>
+  </div>
+
+  <!-- ✅ Identity는 admin에서만 로드 -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script type="module">
+    import { initAdmin } from "./assets/admin-page.js";
+    initAdmin();
+  </script>
+</body>
+</html>
