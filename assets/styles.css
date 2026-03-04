@@ -1,0 +1,25 @@
+/* month nav */
+.month-nav {
+  max-width: 680px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.month-nav button {
+  background: #222;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 12px;
+}
+.month-label {
+  font-weight: 900;
+  color: #222;
+  letter-spacing: 1px;
+}
