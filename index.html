@@ -21,7 +21,7 @@
     <button id="btnLogin" style="background:#222;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;">
       🔐 로그인
     </button>
-    <button id="btnLogout" style="background:#555;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;">
+    <button id="btnLogout" style="display:none;background:#555;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;">
       로그아웃
     </button>
     <button id="btnPreview" style="background:#7BC67E;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">
@@ -31,6 +31,39 @@
       ✅ 적용(커밋)
     </button>
   </div>
+  <!-- ✅ GoTrue 로그인 패널 (btnLogin 누르면 열림) -->
+  <section id="authLoginPanel" style="display:none; max-width:680px; margin:0 auto 10px; padding:12px; border:1px solid #ddd; border-radius:12px; background:#fff;">
+    <div style="font-weight:800; margin-bottom:8px;">관리자 로그인</div>
+  
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <input id="authEmail" type="email" placeholder="운영진 이메일" style="flex:1; min-width:220px; padding:10px; border:1px solid #ddd; border-radius:10px;">
+      <input id="authPassword" type="password" placeholder="비밀번호" style="flex:1; min-width:180px; padding:10px; border:1px solid #ddd; border-radius:10px;">
+    </div>
+  
+    <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+      <button id="btnAuthLogin" style="background:#222;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">로그인</button>
+      <button id="btnAuthSendRecovery" type="button" style="background:#555;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">비밀번호 재설정 메일</button>
+    </div>
+  
+    <div id="authMsg" style="margin-top:8px; font-size:12px; color:#555; font-weight:700;"></div>
+  </section>
+  
+  <!-- ✅ recovery_token 링크로 들어오면 이 패널이 열림 -->
+  <section id="authResetPanel" style="display:none; max-width:680px; margin:0 auto 10px; padding:12px; border:1px solid #ddd; border-radius:12px; background:#fff;">
+    <div style="font-weight:800; margin-bottom:8px;">새 비밀번호 설정</div>
+  
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <input id="authNewPw" type="password" placeholder="새 비밀번호" style="flex:1; min-width:220px; padding:10px; border:1px solid #ddd; border-radius:10px;">
+      <input id="authNewPw2" type="password" placeholder="새 비밀번호 확인" style="flex:1; min-width:220px; padding:10px; border:1px solid #ddd; border-radius:10px;">
+    </div>
+  
+    <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+      <button id="btnAuthSetPw" style="background:#222;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">비밀번호 설정</button>
+      <button id="btnAuthCancelReset" type="button" style="background:#999;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;">취소</button>
+    </div>
+  
+    <div id="authResetMsg" style="margin-top:8px; font-size:12px; color:#555; font-weight:700;"></div>
+  </section>
 
   <!-- 월 이동 -->
   <div class="month-nav">
@@ -167,7 +200,6 @@
   </div>
 
   <!-- ✅ Identity는 admin에서만 로드 -->
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <script type="module">
     import { initAdmin } from "./assets/admin-page.js";
     initAdmin();
