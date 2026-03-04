@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smile Climbing – 월간 정모 스케줄</title>
+
+  <link rel="stylesheet" href="./assets/styles.css"/>
+
+  <!-- favicon / PWA -->
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#111111">
+</head>
+<body class="notice-mode">
+
+  <!-- 월 이동 -->
+  <div class="month-nav">
+    <button id="btnPrev">◀ 이전달</button>
+    <div id="monthLabel" class="month-label"></div>
+    <button id="btnNext">다음달 ▶</button>
+  </div>
+
+  <!-- ── 달력 카드 (네 기존 그대로) ── -->
+  <div class="card" id="calendarCard">
+    <div class="header">
+      <img src="https://www.genspark.ai/api/files/s/mjL4aDIJ" alt="Smile Climbing Logo" onerror="this.style.display='none'"/>
+      <div class="header-text">
+        <div class="month-label" id="hdr-label">2026 Schedule</div>
+        <h1 id="hdr-title">3월 <span>정모 일정</span></h1>
+        <div class="subtitle">Smile Climbing Crew 🧗</div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="dot" style="background:#0d1a0e"></div> 정모</div>
+      <div class="legend-item"><div class="dot" style="background:#F4A261"></div> 평일정모</div>
+      <div class="legend-item"><div class="dot" style="background:#7BC67E"></div> 주말정모</div>
+    </div>
+
+    <div class="calendar-section">
+      <div class="calendar-scroll">
+        <div class="calendar-wide">
+          <div class="day-headers">
+            <div class="sun">일</div><div>월</div><div>화</div><div>수</div>
+            <div>목</div><div>금</div><div class="sat">토</div>
+          </div>
+          <div class="calendar-grid" id="calGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-section" id="infoSection"></div>
+
+    <div class="footer" id="footerSection">
+      <strong>SMILE CLIMBING CREW</strong> &nbsp;|&nbsp; 문의: 카카오톡 오픈채팅 &nbsp;|&nbsp; #스마일클라이밍
+    </div>
+  </div>
+
+  <script type="module">
+    import { initPublic } from "./assets/public-page.js";
+    initPublic();
+  </script>
+</body>
+</html>
