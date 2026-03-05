@@ -6,22 +6,24 @@
   "weekend": {
     "dates": [
       4,
-      11,
-      18,
-      25
+      18
     ],
     "time": "",
     "place": ""
   },
   "weekday": {
     "dates": [
-      8,
-      14,
-      22,
-      28
+      7,
+      21
     ],
     "time": "",
     "place": ""
   },
-  "specials": []
+  "specials": [
+    {
+      "day": 25,
+      "label": "싱글벙클 볼파",
+      "place": ""
+    }
+  ]
 }
