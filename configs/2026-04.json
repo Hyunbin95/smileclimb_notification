@@ -19,11 +19,5 @@
     "time": "",
     "place": ""
   },
-  "specials": [
-    {
-      "day": 25,
-      "label": "싱글벙클 볼파",
-      "place": ""
-    }
-  ]
+  "specials": []
 }
