@@ -1,0 +1,30 @@
+{
+  "year": 2026,
+  "month": 5,
+  "contact": "카카오톡 오픈채팅",
+  "hashtag": "#싱글벙클",
+  "weekend": {
+    "dates": [
+      2,
+      16,
+      30
+    ],
+    "time": "",
+    "place": ""
+  },
+  "weekday": {
+    "dates": [
+      5,
+      19
+    ],
+    "time": "",
+    "place": ""
+  },
+  "specials": [
+    {
+      "day": 2,
+      "label": "볼더링 파티",
+      "place": "신촌담장"
+    }
+  ]
+}
