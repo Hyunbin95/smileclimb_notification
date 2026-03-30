@@ -21,6 +21,11 @@
   },
   "specials": [
     {
+      "day": 2,
+      "label": "잠실 서울숲",
+      "place": "가은"
+    },
+    {
       "day": 4,
       "label": "강동 알레",
       "place": "미지"
