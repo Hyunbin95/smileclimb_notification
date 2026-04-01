@@ -20,9 +20,24 @@
     "place": ""
   },
   "specials": [
+     {
+      "day": 1,
+      "label": "더클라임 홍B",
+      "place": "은지"
+    },
+    {
+      "day": 1,
+      "label": "더클라임 이수",
+      "place": "태욱"
+    },
     {
       "day": 2,
       "label": "잠실 서울숲",
+      "place": "가은"
+    },
+    {
+      "day": 3,
+      "label": "종로 서울숲",
       "place": "가은"
     },
     {
