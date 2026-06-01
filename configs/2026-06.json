@@ -21,10 +21,20 @@
     "place": ""
   },
   "specials": [
+     {
+      "day": 1,
+      "label": "문래 더클",
+      "place": "동기"
+    },
     {
       "day": 2,
       "label": "을지로 손상원",
       "place": "현승"
+    },
+    {
+      "day": 3,
+      "label": "종로 서울숲",
+      "place": "형욱"
     }
   ]
 }
